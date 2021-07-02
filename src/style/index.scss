@@ -1,0 +1,217 @@
+/* 遮罩层 */
+.bg-wrapper {
+  position: fixed;
+  display: none;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+/* 背景层 */
+.bg-img-wrapper {
+  position: fixed;
+  z-index: -1;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  .bg-img {
+    width: 100%;
+    height: 100%;
+  }
+}
+/* 上方信息模块 */
+.information-wrapper {
+  display: flex;
+  justify-content: space-evenly;
+  height: 3.6rem;
+
+  .time-information {
+    margin: 0.5rem;
+    background: rgba(255, 210, 77, 1.0);
+    border: 0.4rem solid rgba(140, 105, 0, 1.0);
+    border-radius: 1.5rem;
+    width: 7rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+  }
+
+  .money-information {
+    margin: 0.5rem;
+    background: rgba(255, 210, 77, 1.0);
+    border: 0.4rem solid rgba(140, 105, 0, 1.0);
+    border-radius: 1.5rem;
+    width: 10rem;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    padding-right: 1rem;
+
+  }
+}
+
+/* 厨师模块 */
+.chefs-wrapper {
+  box-sizing: content-box;
+  background: rgba(255, 210, 77, 1.0);
+  margin: 0.5rem;
+  border: 0.5rem solid #fff;
+  border-radius: 1.4rem;
+  flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+
+  .chef-wrapper {
+    flex: 1;
+    width: 33.3%;
+    min-width: 33.3%; // 加入这两个后每个item的宽度就生效了
+    max-width: 33.3%; // 加入这两个后每个item的宽度就生效了
+    height: 33.3%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0.6rem 0;
+
+    .chef-add-img-wrapper {
+      width: 80%;
+      height: 80%;
+      border: 0.4rem solid #fff;
+      border-radius: 50%;
+      background-color: rgb(163, 162, 162);
+
+      .chef-add-img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    .chef-img-wrapper {
+      width: 80%;
+      height: 80%;
+      border: 0.4rem solid #fff;
+      border-radius: 50%;
+      background: linear-gradient(to right, rgba(221, 221, 221, 1) 0%, rgba(221, 221, 221, 1) 50%, rgba(170, 170, 170, 1) 51%, rgba(170, 170, 170, 1) 100%);
+
+      .chef-img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+}
+
+/* 顾客模块 */
+.customers-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  box-sizing: content-box;
+  height: 13rem;
+  background: rgba(255, 166, 77, 1);
+  margin: 1rem 0.5rem;
+  border: 0.5rem solid #fff;
+  border-radius: 1.4rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  .customer-wrapper {
+    width: 50%;
+    height: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .customer-img-wrapper {
+      width: 5.5rem;
+      height: 5.5rem;
+      border: 0.4rem solid #fff;
+      border-radius: 50%;
+      background: linear-gradient(to right, rgba(221, 221, 221, 1) 0%, rgba(221, 221, 221, 1) 50%, rgba(170, 170, 170, 1) 51%, rgba(170, 170, 170, 1) 100%);
+
+      .customer-img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+}
+
+/* modal模块 */
+
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 14rem;
+  transform: translateY(-50%);
+  background-color: rgb(255, 210, 77);
+  border: 0.5rem solid #fff;
+  border-radius: 1.4rem;
+  margin: 0 .5rem;
+  .modal-title {
+    margin-top: 0.6rem;
+    height: 1.2rem;
+    font-weight:bold;
+    font-size: 1.2rem;
+    text-align: center;
+  }
+  .modal-content {
+    height: 8rem;
+    padding: .6rem .4rem .2rem 1.2rem ;
+    font-size: .8rem;
+    word-wrap:break-word;
+    line-height: 1.4rem;
+  }
+  .modal-button-area {
+    height: 2rem;
+    .button {
+      box-sizing: content-box;
+      font-size: .8rem;
+      font-weight: 500;
+      color: rgb(151, 114, 7);
+      background: rgba(255, 210, 77, 1.0);
+      border: 0.1rem solid rgba(140, 105, 0, 1.0);
+      margin: 0 auto;
+    }
+    .button-left {
+      margin: 0.5rem;
+      width: 9rem;
+      border-radius: 2rem;
+      height: 100%;
+    }
+    .button-right {
+      margin: 0.5rem;
+      width: 5rem;
+      height: 100%;
+      border-radius: 1.2rem;
+    }
+  }
+}
+
+/* 短消息 */
+.info {
+  position: absolute;
+  box-sizing: content-box;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgb(217, 230, 125);
+  height: 4rem;
+  line-height: 2rem;
+  width: 16rem;
+  border: 0.5rem solid #fff;
+  border-radius: 1.4rem;
+  color: #8c6900;
+  font-weight: 600;
+  display: none;
+  .info-content {
+    padding: .1rem;
+    word-wrap: break-word;
+  }
+}
