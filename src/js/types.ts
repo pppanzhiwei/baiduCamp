@@ -1,5 +1,5 @@
 /* 定义各种接口类型 */
-import {Customer} from './gameCharacter'
+import { Customer } from "./gameCharacter";
 // modal
 interface Modal {
   title: string;
@@ -10,8 +10,8 @@ interface Modal {
   }>;
 }
 interface createCustomer {
-  Customer: Customer,
-  time: number
+  Customer: Customer;
+  time: number;
 }
 // 按钮
 interface Button {
@@ -33,8 +33,9 @@ enum foodType {
 }
 // 单个菜品
 interface Food {
+  name: string;
   price: number; // 价格
-  type: string; // 菜的类型
+  type?: string; // 菜的类型
   eatTime: number; // 用餐时间
   cookTime: number; // 制作时间
 }

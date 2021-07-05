@@ -28,15 +28,15 @@
     </div>
   </div>
   <!-- 厨师区域-->
-  <div class="chefs-wrapper">
-    <div class="chef-wrapper">
-      <div class="chef-img-wrapper">
-        <img class="chef-img" src="../public/assets/厨师.png" alt="">
+  <div class="chiefs-wrapper">
+    <div class="chief-wrapper">
+      <div class="chief-img-wrapper">
+        <img class="chief-img" src="../public/assets/厨师.png" alt="">
       </div>
     </div>
-    <div class="chef-wrapper">
-      <div class="chef-add-img-wrapper">
-        <img class="chef-add-img" src="../public/assets/厨师帽.png" alt="">
+    <div class="chief-wrapper" id="addChief">
+      <div class="chief-add-img-wrapper">
+        <img class="chief-add-img" src="../public/assets/厨师帽.png" alt="">
       </div>
     </div>
   </div>
@@ -66,21 +66,118 @@
   <!-- 等位区域 -->
   <div class="wait-area">
   </div>
-  
-  <div class="menu-wrapper">
-    <div class="form-area">
-      <h3>凉菜</h3>
-      <div class='checkbox'>
-        <input type='checkbox' id='checkbox1' name='checkboox[]'>
-        <label for='checkbox1'>凉拌</label>
-      </div>
 
+  <!-- 客人点单信息 -->
+  <div class="customer-information">
+  </div>
+  <!-- 菜单信息 -->
+  <div class="menu-wrapper">
+    <div class="menu-content-area">
+      <div class="menu-list menu-cold">
+        <h3 class="title">凉菜 (二选一，可不点)</h3>
+        <ul class="menu-class">
+          <li class="menu-item">
+            <input type='checkbox' value=6 dateName='凉拌黄瓜' id='cold1' name="cold">
+            <label for='cold1'>
+              <div class="item-name">凉拌黄瓜</div>
+              <div class="middle">...............</div>
+              <div class="item-price">￥6</div>
+            </label>
+          </li>
+          <li class="menu-item">
+            <input type='checkbox' dateName='盐水花生' value=8 name="cold" id='cold2'>
+            <label for='cold2'>
+
+              <div class="item-name">盐水花生</div>
+              <div class="middle">...............</div>
+              <div class="item-price">￥8</div>
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="menu-list menu-main">
+        <h3 class="title">主菜 (五选一，必点)</h3>
+        <ul class="menu-class">
+          <li class="menu-item">
+            <input type='radio' id='main1' dateName='盐水鸭'  value=26 name="main">
+            <label for='main1'>
+
+              <div class="item-name">盐水鸭</div>
+              <div class="middle">...............</div>
+              <div class="item-price">￥26</div>
+            </label>
+          </li>
+          <li class="menu-item">
+            <input type='radio' id='main2' dateName='农家小炒肉' value=22 name="main">
+            <label for='main2'>
+
+              <div class="item-name">农家小炒肉</div>
+              <div class="middle">...............</div>
+              <div class="item-price">￥22</div>
+            </label>
+          </li>
+          <li class="menu-item">
+            <input type='radio' id='main3' dateName='金牌烧鹅' value=38 name="main">
+            <label for='main3'>
+
+              <div class="item-name">金牌烧鹅</div>
+              <div class="middle">...............</div>
+              <div class="item-price">￥38</div>
+            </label>
+          </li>
+          <li class="menu-item">
+            <input type='radio' id='main4' dateName='蟹粉狮子头' value=22 name="main">
+            <label for='main4'>
+
+              <div class="item-name">蟹粉狮子头</div>
+              <div class="middle">...............</div>
+              <div class="item-price">￥22</div>
+            </label>
+          </li>
+          <li class="menu-item">
+            <input type='radio' id='main5' dateName='外婆红烧肉' value=40 name="main">
+            <label for='main5'>
+
+              <div class="item-name">外婆红烧肉</div>
+              <div class="middle">...............</div>
+              <div class="item-price">￥40</div>
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="menu-list menu-drink">
+        <h3 class="title">饮品 (二选一，可不点)</h3>
+        <ul class="menu-class">
+          <li class="menu-item">
+            <input type='checkbox' id='drink1' dateName='鲜榨果汁' value=12 name="drink">
+            <label for='drink1'>
+
+              <div class="item-name">鲜榨果汁</div>
+              <div class="middle">...............</div>
+              <div class="item-price">￥12</div>
+            </label>
+          </li>
+          <li class="menu-item">
+            <input type='checkbox' id='drink2' dateName='珍珠奶茶' value=16 name="drink">
+            <label for='drink2'>
+
+              <div class="item-name">珍珠奶茶</div>
+              <div class="middle">...............</div>
+              <div class="item-price">￥16</div>
+            </label>
+          </li>
+        </ul>
+      </div>
     </div>
+
+
+
+
     <div class="button-area">
-      <button class="button-left button">点好了，快点上菜</button>
-      <button class="button-right button">不吃了</button>
+      <button class="button-left button"  id="orderSuccess">点好了，快点上菜</button>
+      <button class="button-right button" id="orderFail">不吃了</button>
     </div>
-    
+
   </div>
 
 </body>

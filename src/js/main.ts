@@ -2,26 +2,26 @@ import "./reset.ts";
 import "../style/reset.css";
 import "../style/border.css";
 import "../style/index.css";
-import { GLOBAL_EVENT, GLOBAL_DOM, waitLimit } from "./const_help";
+import { GLOBAL_EVENT, GLOBAL_DOM, waitLimit, menuMap } from "./const_help";
 import {
   createModal,
   createButton,
-  closeModal,
-  openModal,
   createInfoComponent,
   allInfo,
   openInfo,
   closeInfo,
 } from "./modal";
-import { startModal } from "./modal";
+import { modalType } from "./modal";
 import { handleGlobalTimerInterval, setSecond } from "./timer";
 import {
-  closeWrapper,
-  openWrapper,
+  disappearElement,
+  showElement,
   isWaitEmpty,
   isChiefsEmpty,
   isSeatsEmpty,
   format,
+  debounce,
+  throttle,
 } from "./utils";
 import { GlobalTime, createCustomer } from "./types";
 import {
@@ -30,9 +30,9 @@ import {
   Chief,
   createWaitCustomerDOM,
   createSeatCustomerDOM,
+  createChiefDOM,
 } from "./gameCharacter";
 import { EventEmit } from "./eventEmit";
-import { useReactive } from "./reactive/index";
 // 全局window挂载属性
 declare global {
   interface Window {
@@ -50,37 +50,66 @@ declare global {
 window.$restaurantTime = { week: 1, day: 1, second: 1 };
 window.$restaurantTimer = null;
 window.$revenue = 500;
-window.$chiefs = [];
+window.$chiefs = [new Chief()];
 window.$waits = [];
 window.$seats = new Array(4);
 window.$customers = [];
 window.$EventEmit = new EventEmit();
 
-/* 开启事件监听器 */
-const waitClickListener = GLOBAL_DOM.globalWaitsDOM.addEventListener(
-  "click",
-  (e) => {}
-);
-
 /* 游戏初始化界面，wrapper生效生成弹窗并等待点击 */
 const one = {
-  Customer: new Customer("潘志伟", "/public/assets/客人1.png", 100, true),
+  Customer: new Customer(
+    "潘志伟",
+    "/public/assets/客人1.png",
+    20,
+    true,
+    "rgb(38, 147, 255)",
+    "rgb(0, 109, 217)"
+  ),
   time: 1,
 };
 const two = {
-  Customer: new Customer("王", "/public/assets/客人2.png", 100, true),
+  Customer: new Customer(
+    "王",
+    "/public/assets/客人2.png",
+    50,
+    true,
+    "rgb(38, 147, 255)",
+    "rgb(0, 109, 217)"
+  ),
   time: 2,
 };
 const three = {
-  Customer: new Customer("3", "/public/assets/客人3.png", 100, true),
+  Customer: new Customer(
+    "3",
+    "/public/assets/客人3.png",
+    50,
+    true,
+    "rgb(255, 38, 38)",
+    "rgb(178, 0, 0)"
+  ),
   time: 20,
 };
 const four = {
-  Customer: new Customer("4", "/public/assets/客人2.png", 100, true),
+  Customer: new Customer(
+    "4",
+    "/public/assets/客人2.png",
+    50,
+    true,
+    "rgb(255, 38, 38)",
+    "rgb(178, 0, 0)"
+  ),
   time: 40,
 };
 const five = {
-  Customer: new Customer("5", "/public/assets/客人1.png", 100, true),
+  Customer: new Customer(
+    "5",
+    "/public/assets/客人1.png",
+    50,
+    true,
+    "rgb(255, 38, 38)",
+    "rgb(178, 0, 0)"
+  ),
   time: 30,
 };
 
@@ -90,7 +119,7 @@ let info: HTMLDivElement;
 // 游戏初始化
 window.onload = () => {
   gameModal = createModal({
-    ...startModal,
+    ...modalType.startModal,
     buttons: [
       {
         title: "开始经营吧",
@@ -99,18 +128,22 @@ window.onload = () => {
     ],
   });
   document.body.appendChild(gameModal);
-  // 监听等待区
+  // 等待区点击事件监听器开启
   const waitAreaEVentListener = GLOBAL_DOM.globalWaitsDOM.addEventListener(
     "click",
-    handleWaitAreaClick
+    throttle(handleWaitAreaClick, 300)
+  );
+  // TODO: 厨师区点击监听
+  const chiefAreaEVentListener = GLOBAL_DOM.globalChiefsDOM.addEventListener(
+    "click",
+    throttle(handleChiefsAreaClick, 300)
   );
 };
 
 /* 开始游戏函数*/
 function gameStart() {
   document.body.removeChild(gameModal);
-  closeModal(gameModal);
-  closeWrapper(GLOBAL_DOM.globalWrapperDOM as HTMLElement);
+  disappearElement(GLOBAL_DOM.globalWrapperDOM as HTMLElement);
   eventRegister(); // 完成初始事件注册
   dayEndTodo(); // 日数据初始化
   // 开启全局定时器
@@ -127,6 +160,7 @@ function eventRegister() {
   window.$EventEmit.on(GLOBAL_EVENT.REVENUE_CHANGE, handleMoneyChange);
   window.$EventEmit.on(GLOBAL_EVENT.SEATS_IN, handleSeatIn);
   window.$EventEmit.on(GLOBAL_EVENT.SEATS_OUT, handleSeatOut);
+  window.$EventEmit.on(GLOBAL_EVENT.WAITS_OUT, handleWaitTimeOut);
 }
 
 // 全局日事件处理
@@ -153,8 +187,8 @@ function handleMoneyChange(value) {
 // 点击等待区域处理
 /* 逻辑 如果餐桌不为空，则点击无效，否则第一个顾客进入餐厅 */
 function handleWaitAreaClick() {
-  // 等待区域无客人
-  if (!window.$waits.length) return
+  // 如果等待区域无客人
+  if (!window.$waits.length) return;
   const index = isSeatsEmpty();
   if (index === false) return;
   // 删除等待区DOM中的第一个节点 将对应顾客从等待区队列中移除
@@ -162,37 +196,226 @@ function handleWaitAreaClick() {
   customer.orderNumber = index as number;
   const children = GLOBAL_DOM.globalWaitsDOM.children;
   GLOBAL_DOM.globalWaitsDOM.removeChild(children[0]);
+  // 该顾客状态改变为进入餐桌状态
   customer.changeState(customerState.SIT);
+  // 1、弹出菜单 遮罩层 开启customer定时器
+  
+}
+//  等待区等待超时结果
+function handleWaitTimeOut(customer: Customer) {
+  // 等待时间到, 删除等位顾客节点
+  console.log("延时时间到");
+  let parent = GLOBAL_DOM.globalWaitsDOM;
+  let son = document.querySelector(`#wait-${customer.name}`);
+  parent.removeChild(son);
+}
+// 厨师点击后, 增加厨师
+function handleChiefsAreaClick(e) {
+  const area = GLOBAL_DOM.globalChiefsDOM;
+  const add = area.lastChild;
+  // 点击的是招聘新厨师
+  if (add.contains(e.target)) {
+    // 创建modal
+    gameModal = createModal({
+      ...modalType.wantedModal,
+      buttons: [
+        {
+          title: "是的，确认招聘",
+          click: handleAddNewChief,
+        },
+        {
+          title: "先不了",
+          click: handleDoNothing,
+        },
+      ],
+    });
+    // 显示遮罩层
+    showElement(GLOBAL_DOM.globalWrapperDOM as HTMLElement);
+  }
 }
 
-// 进入餐桌的事件处理
+// 顾客入座处理订单
 function handleSeatIn(customer: Customer) {
-  const index = customer.orderNumber;
-  window.$seats[index as number] = customer;
-  // 1、渲染餐位DOM
+  let money = 0; // 维护用户订单总金额
+  let radio = 0; // 维护用户主餐的价格
+  let btnConfirmId: string = "orderSuccess";
+  let btnCancelId: string = "orderFail";
+  console.log(customer)
+  const orderClickListener = GLOBAL_DOM.globalMenuDOM.addEventListener(
+    "click",
+    debounce(handleOrderClick, 500)
+  );
+  // 1、清除全局interval
+  clearInterval(window.$restaurantTimer);
+  // 2、显示遮罩层、菜单、用户点单界面
+  showElement(GLOBAL_DOM.globalWrapperDOM as HTMLElement);
+  showElement(GLOBAL_DOM.globalCustomerOrderDOM as HTMLElement);
+  showElement(GLOBAL_DOM.globalMenuDOM as HTMLElement);
+  // 3、渲染餐位DOM
+  const customerInfo = GLOBAL_DOM.globalCustomerOrderDOM;
+  const customerOrder = creatOrderInformation(customer);
   const parent = GLOBAL_DOM.globalSeatsDOM;
+  const index = customer.orderNumber; // index为顾客的入座的餐桌号
   const oldNode = parent.children[index];
-  const newNode = createSeatCustomerDOM(customer.name, customer.icon);
+  const newNode = createSeatCustomerDOM(
+    customer.name,
+    customer.icon,
+    customer.bgColorLeft,
+    customer.bgColorRight
+  );
+  const infoFragment = document.createDocumentFragment();
+  infoFragment.appendChild(customerOrder);
+  infoFragment.appendChild(newNode.cloneNode(true));
+  customerInfo.innerHTML = "";
+  customerInfo.appendChild(infoFragment);
+  console.log(newNode);
+  newNode.id = `seat-${customer.name}`;
+  console.log(newNode);
+  window.$seats[index as number] = customer; // 数组变化
   parent.replaceChild(newNode, oldNode);
-  // 2、显示菜单
-  console.log("时间停止");
-  clearInterval(window.$restaurantTimer)
-  openWrapper(GLOBAL_DOM.globalWrapperDOM as HTMLElement);
-  console.log("我是菜单");
+  // 菜单处理
+  // 1、点单功能主要是两部分内容
+  // 1、选择菜品时，总金钱会跟随变化
+  // 2、点击不吃的时候 关闭按钮 ， 顾客进入离开状态 时间重新开始
+  // 3、未选择主菜时，点击无效
+
+  // 监听点击菜单的事件
+  function handleOrderClick(e) {
+    console.log(e);
+    console.log(customer)
+    let target = e.target;
+    // 处理点击按钮事件
+    handleBtnClick(customer,target, btnConfirmId, btnCancelId);
+    // 处理菜品选择
+    if (target.type === "checkbox") {
+      // 如果target.checked属性为true,说明是取消选择
+      console.log(target.checked);
+      if (target.checked) {
+        money += Number(target.value);
+      } else {
+        money -= Number(target.value);
+      }
+    }
+    if (target.type === "radio") {
+      const newVal = Number(target.value);
+      money = money - radio + newVal;
+      radio = newVal;
+    }
+    // 更新moneyDOM
+    customerOrder.innerHTML = `${customer.name}正在点菜，已经点了${money}元`;
+    // 点击事件处理
+    function handleBtnClick(customer, target, confirmId: string, cancelId: string) {
+      let id = target.id;
+      if (id === confirmId) {
+        let coldCheckbox = document.getElementsByName("cold");
+        let drinkCheckbox = document.getElementsByName("drink");
+        let mainFoodCheckbox = document.getElementsByName("main");
+        let mainNum = [].filter.call(
+          mainFoodCheckbox,
+          (item) => item.checked === true
+        ).length;
+        let coldNum = [].filter.call(
+          coldCheckbox,
+          (item) => item.checked === true
+        ).length;
+        let drinkNum = [].filter.call(
+          drinkCheckbox,
+          (item) => item.checked === true
+        ).length;
+        // 点餐 1、判断菜单是否符合规则
+        if (mainNum == 0 || coldNum >= 2 || drinkNum >= 2) {
+          console.log("按规则选择菜单");
+          return;
+        } else {
+          addOrderList(customer, coldCheckbox);
+          addOrderList(customer, drinkCheckbox);
+          addOrderList(customer, mainFoodCheckbox);
+          // 渲染等餐DOM 进度条
+          renderSeatProgress(customer, "seat");
+          // TODO:进入等餐状态
+          customer.changeState(customerState.WAIT_DISH);
+          // 分发任务给厨师 // 绑定
+          console.log("点好餐了，快点上菜");
+          reset();
+          // TODO: 短消息显示
+        }
+      } else if (id === cancelId) {
+        console.log("不点餐,离开了");
+        customer.changeState(customerState.LEAVE);
+        reset();
+      }
+      function renderSeatProgress(customer: Customer, area: string) {
+        debugger;
+        let id = `${area}-${customer.name}`;
+        let customerWrapper = document.getElementById(id);
+        let progressContainer =
+          customerWrapper.getElementsByClassName("progress-container")[0];
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < customer.orderList.length; i++) {
+          let progress = createProgress(customer.orderList[i].name);
+          fragment.appendChild(progress);
+        }
+        progressContainer.appendChild(fragment);
+      }
+      function createProgress(dishName: string) {
+        let wrapper = document.createElement("div");
+        wrapper.className = "progress-wrapper";
+        wrapper.innerHTML = `<div class="text">${dishName}</div>
+        <div class="progress"></div>
+        `;
+        return wrapper;
+      }
+      function reset() {
+        // 关闭modal
+        disappearElement(GLOBAL_DOM.globalMenuDOM as HTMLElement);
+        disappearElement(GLOBAL_DOM.globalCustomerOrderDOM as HTMLElement);
+        disappearElement(GLOBAL_DOM.globalWrapperDOM as HTMLElement);
+        // 开启全局定时器
+        window.$restaurantTimer = setInterval(
+          handleGlobalTimerInterval(window.$restaurantTime, setSecond),
+          1000
+        );
+      }
+      function addOrderList(customer, menu: NodeListOf<HTMLElement>) {
+        for (let i = 0; i < menu.length; i++) {
+          if ((menu[i] as any).checked) {
+            const foodName = menu[i].getAttribute("dateName");
+            const food = menuMap.get(foodName);
+            customer.orderList.push(food);
+            (menu[i] as any).checked = false;
+          }
+        }
+      }
+    }
+  }
+  // 函数用于创建用户点单时的显示头像与点餐价格的DOM
+  function creatOrderInformation(customer: Customer) {
+    const div = document.createElement("div");
+    div.className = "customer-text-info";
+    div.innerHTML = `${customer.name}正在点菜，已经点了0元`;
+    return div;
+  }
 }
 
-// 处理出座位事件
+// 处理用户离座
+
+// 处理用户离开餐桌事件
 function handleSeatOut(customer: Customer) {
   // 1、将customer对应的window.$seat置为空2、用空图去替换DOM
   const index = customer.orderNumber;
   const parent = GLOBAL_DOM.globalSeatsDOM;
-  const seatDOM = document.querySelector(`seat-${customer.name}`);
+  console.log(parent);
+  const seatDOM = parent.children[index];
+  console.log(seatDOM);
   window.$seats[index] = undefined;
-  parent.replaceChild(createSeatCustomerDOM(undefined, undefined), seatDOM);
+  // TODO: bug
+  parent.replaceChild(
+    createSeatCustomerDOM(undefined, undefined, "#dddddd", "#aaaaaa"),
+    seatDOM
+  );
 }
 
-
-/* 每1s的流程 需要对当前时刻的客人的数量进行判断*/
+/* 主流程，每一秒触发一次*/
 function whileDo() {
   const createNowCustomer = () => {
     if (!isWaitEmpty()) {
@@ -213,7 +436,14 @@ function whileDo() {
     const fragment = document.createDocumentFragment();
     while (len < waitLimit && index < customersLen) {
       const customer = customers[index].Customer;
-      fragment.appendChild(createWaitCustomerDOM(customer.name, customer.icon));
+      fragment.appendChild(
+        createWaitCustomerDOM(
+          customer.name,
+          customer.icon,
+          customer.bgColorLeft,
+          customer.bgColorRight
+        )
+      );
       // DOM添加，并且对应的顾客进入等待状态
       window.$waits.push(customers[index].Customer);
       // 顾客状态切换
@@ -224,10 +454,10 @@ function whileDo() {
     // 将fragment加入DOM
     GLOBAL_DOM.globalWaitsDOM.appendChild(fragment);
   };
-  createNowCustomer(); // 到店顾客数据更新逻辑
+  createNowCustomer(); // 到店顾客数据更新
 }
 
-// 初始化一天的顾客数据
+// 初始化每日的顾客数据
 function createDayCustomer() {
   /* 生成日顾客数据 */
   console.log("日顾客数据初始化");
@@ -244,4 +474,35 @@ function payChiefs(chiefs: Array<Chief>, setMoney: number) {
     payOffAll += payOff;
   }
   window.$EventEmit.emit(GLOBAL_EVENT.REVENUE_CHANGE, -payOffAll);
+}
+
+// 招聘新厨师
+function handleAddNewChief() {
+  let len = window.$chiefs.length;
+  if (len === 6) {
+    console.log("厨师已经足够多了，无需再招聘");
+    return;
+  }
+  // 增加dom与数据数组变化
+  const chief = new Chief();
+  window.$chiefs.push(chief);
+  const parent = GLOBAL_DOM.globalChiefsDOM;
+  const addArea = document.getElementById("addChief");
+  const newChiefDOM = createChiefDOM("rgb(172, 145, 255)", "rgb(122, 77, 255)");
+  GLOBAL_DOM.globalChiefsDOM.insertBefore(newChiefDOM, addArea);
+  console.log(addArea);
+  handleDoNothing();
+  // 关闭招聘modal
+  if (window.$chiefs.length === 6) {
+    addArea.style.display = "none";
+  } else {
+    addArea.style.display = "flex";
+  }
+}
+// 点击不招聘
+function handleDoNothing() {
+  // 删除弹框
+  document.body.removeChild(gameModal);
+  // 取消遮罩
+  disappearElement(GLOBAL_DOM.globalWrapperDOM as HTMLElement);
 }
