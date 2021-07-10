@@ -6,10 +6,11 @@ class EventEmit {
   }
   // 订阅
   on(event: string, callback:Function) {
-    if (!this.events.hasOwnProperty(event)) {
-      this.events[event] = [callback]
+    let _this = this
+    if (!_this.events.hasOwnProperty(event)) {
+      _this.events[event] = [callback]
     } else {
-      this.events[event].push(callback)
+      _this.events[event].push(callback)
     }
   }
   // 注册事件的回调函数，该回调函数只执行一次,执行一次后就删除回调
@@ -23,15 +24,15 @@ class EventEmit {
   }
   // 发布
   emit(event, ...args) {
+    let _this = this;
+    if(!this.events[event]) return
     //事件池中该事件有回调函数，触发回调函数
     if(this.events[event]) {
+      // item为每一个函数
       for(let item of this.events[event]) {
-        item.apply(this,args)
+        item.apply(_this,args)
       }
-    } else {
-      console.log('未注册')
     }
-
   }
   // 删除一个回调函数
   remove(event, callback) {
@@ -43,4 +44,6 @@ class EventEmit {
   }
 }
 
-export {EventEmit}
+const emitter = new EventEmit()
+
+export {EventEmit, emitter}

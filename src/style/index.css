@@ -92,6 +92,29 @@
 }
 
 .chiefs-wrapper .chief-wrapper {
+  position: relative;
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  width: 33.3%;
+  min-width: 33.3%;
+  max-width: 33.3%;
+  height: 33.3%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  margin: 0.6rem 0;
+  pointer-events: none
+}
+
+.chiefs-wrapper .chief-add-wrapper {
+  position: relative;
   -webkit-box-flex: 1;
   -ms-flex: 1;
   flex: 1;
@@ -111,17 +134,74 @@
   margin: 0.6rem 0;
 }
 
-.chiefs-wrapper .chief-wrapper .chief-add-img-wrapper {
+.chiefs-wrapper .chief-add-img-wrapper {
+  position: relative;
   width: 80%;
   height: 80%;
   border: 0.4rem solid #fff;
   border-radius: 50%;
-  background-color: #a3a2a2;
+  background-color: rgb(221, 221, 221);
 }
 
-.chiefs-wrapper .chief-wrapper .chief-add-img-wrapper .chief-add-img {
+/* 厨师解雇图标显示控制 */
+.chief-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 65%;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-image:
+    url("../../public/assets/x.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: auto;
+}
+
+/* 厨师解雇图标隐藏 */
+.chief-wrapper-cooking::after {
+  display: none;
+}
+
+/* 厨师上菜图标 */
+.chief-wrapper-cooked::before {
+  content: '';
+  position: absolute;
+  bottom: 1.5rem;
+  left: 0;
+  width: 2rem;
+  height: 2rem;
+  background-image:
+    url("../../public/assets/上菜员.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: auto;
+}
+
+
+/* 招聘厨师点击 */
+.chiefs-wrapper .add-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 2rem;
+  width: 2rem;
+  transform: translate(-50%, -50%);
+}
+
+.chiefs-wrapper .add-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 2rem;
+  width: 2rem;
+  transform: translate(-50%, -50%);
+}
+
+.chiefs-wrapper .chief-add-img-wrapper .chief-add-img {
   width: 100%;
   height: 100%;
+  filter: grayscale(100%) brightness(600%)
 }
 
 .chiefs-wrapper .chief-wrapper .chief-img-wrapper {
@@ -173,7 +253,7 @@
   -ms-flex-pack: center;
   justify-content: center;
 }
-/* 外部 */
+
 .customer-wrapper .progress-container {
   position: absolute;
   left: 65%;
@@ -183,6 +263,7 @@
   display: flex;
   flex-direction: column;
 }
+
 .customer-wrapper .progress-wrapper {
   position: relative;
   margin-top: .1rem;
@@ -190,20 +271,14 @@
   width: 4rem;
   font-size: 0.05rem;
   color: white;
-  background: rgb(38, 147, 255);
   border: .12rem solid white;
   text-align: center;
   line-height: 1.5rem;
 }
-.progress {
-  position: absolute;
-  animation: progressWait 50s linear forwards;
-  background: blue;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 0%;
-}
+
+
+
+
 
 .customers-wrapper .customer-wrapper .customer-img-wrapper {
   width: 5rem;
@@ -232,17 +307,21 @@
   display: flex;
   flex-direction: row-reverse;
 }
+
 .wait-area:nth-child(1) {
   position: relative;
   left: 0;
 }
-.wait-area .customer {
-  width: 3.2rem;
+
+.wait-area .wait-customer {
   height: 3.2rem;
+  display: flex;
+  justify-content: center;
 }
-.wait-area .customer-img-wrapper {
-  width: 3.2rem;
-  height: 3.2rem;
+
+.wait-area .wait-img-wrapper {
+  width: 3.6rem;
+  height: 3.6rem;
   border: 0.3rem solid white;
   border-radius: 50%;
   background: rgb(0, 109, 217);
@@ -251,20 +330,17 @@
   justify-content: center;
 }
 
-.wait-area .customer-img-wrapper .customer-img {
+.wait-area .wait-img-wrapper .wait-img {
   display: block;
   width: 140%;
   height: 140%;
 }
 
-
-
 .wait-area .progress-wrapper {
   position: relative;
-  top: -0.4rem;
-  left: -.4rem;
+  top: -0.8rem;
   height: 1.5rem;
-  width: 4rem;
+  width: 100%;
   font-size: 0.05rem;
   color: white;
   background: rgba(38, 147, 255);
@@ -273,7 +349,33 @@
   line-height: 1.5rem;
 }
 
-.wait-area .progress-wrapper .text {
+
+/* 厨师做菜进度条 */
+.chief-wrapper .progress-wrapper {
+  position: absolute;
+  bottom: 0;
+  height: 1.5rem;
+  width: 80%;
+  font-size: 0.05rem;
+  color: white;
+  background: rgba(38, 147, 255);
+  border: 0.12rem solid white;
+  text-align: center;
+  line-height: 1.5rem;
+}
+
+
+.progress {
+  position: absolute;
+  animation: progress 50s linear none;
+  background: blue;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 0%;
+}
+
+.progress-wrapper .text {
   position: absolute;
   top: 0;
   left: 0;
@@ -282,17 +384,24 @@
   z-index: 2;
 }
 
-.wait-area .progress {
-  animation: progressWait 50s linear forwards;
+.dish-ready::after {
+  content: '';
   position: absolute;
-  background: blue;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 0%;
+  border: 0.2rem solid white;
+  border-radius: 50%;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.2rem;
+  height: 1.2rem;
+  background-color: linear-gradient(to right, rgb(255, 38, 38) 0%, rgb(255, 38, 38) 50%, rgb(178, 0, 0) 51%, rgb(178, 0, 0) 100%);
+  background-image: url("../../public/assets/上菜员.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
 
-@keyframes progressWait {
+
+@keyframes progress {
   0% {
     width: 0%;
   }
@@ -412,7 +521,6 @@
 /* 菜单模块 */
 .menu-wrapper {
   position: absolute;
-  display: none;
   top: 4rem;
   left: .5rem;
   right: .5rem;
@@ -488,6 +596,10 @@
   margin: 0 auto;
   font-weight: bold;
   height: 3rem;
+}
+
+.menu-wrapper .button-area .button-illegal {
+  background-color: rgba(90, 90, 54, 0.5);
 }
 
 .menu-wrapper .button-area .button-left {

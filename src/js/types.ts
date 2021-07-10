@@ -1,5 +1,6 @@
 /* 定义各种接口类型 */
 import { Customer } from "./gameCharacter";
+import { Food} from "./food"
 // modal
 interface Modal {
   title: string;
@@ -26,18 +27,19 @@ interface GlobalTime {
   day: number;
   second: number;
 }
-enum foodType {
-  cold = "cold",
-  main = "main",
-  drink = "drink",
-}
-// 单个菜品
-interface Food {
-  name: string;
+
+
+
+// 菜品上的单个菜品
+interface MenuFood {
+  name: string; // 名称
+  cost: number // 成本
   price: number; // 价格
-  type?: string; // 菜的类型
+  waitTime: number; // 等餐时间
   eatTime: number; // 用餐时间
   cookTime: number; // 制作时间
 }
 
-export { Modal, Button, GlobalTime, Food, createCustomer };
+
+
+export { Modal, Button, GlobalTime, MenuFood, createCustomer};

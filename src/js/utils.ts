@@ -8,22 +8,8 @@ function disappearElement(ele: HTMLElement) {
   ele.style.display = "none";
 }
 
-/* 判断等待区是否有空位 */
-function isWaitEmpty(): boolean {
-  return window.$waits.length < waitLimit ? true : false;
-}
-/* 判断是否能招厨师 */
-function isChiefsEmpty(): boolean {
-  return window.$chiefs.length < chiefsLimit ? true : false;
-}
-/* 判断第一个餐位 */
-function isSeatsEmpty(): boolean | number {
-  const index = window.$seats.findIndex((item) => item === undefined);
-  if (index > -1) {
-    return index;
-  }
-  return false;
-}
+
+
 
 // 千分位划分
 function format(num: number | string) {
@@ -45,7 +31,7 @@ function debounce(callback, delay) {
     }, delay);
   };
 }
-// 节流
+/* // 节流
 function throttle(fun, delay) {
   let timer = null;
   let previous = 0;
@@ -64,15 +50,11 @@ function throttle(fun, delay) {
       }, remaining); //因为上面添加的clearTimeout.实际这个定时器只有最后一次才会执行
     }
   };
-}
+} */
 
 export {
   debounce,
-  throttle,
   showElement,
   disappearElement,
-  isWaitEmpty,
-  isChiefsEmpty,
-  isSeatsEmpty,
   format,
 };

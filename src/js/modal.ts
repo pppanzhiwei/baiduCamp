@@ -80,15 +80,23 @@ const wantedModal = {
   <div>请问你确认招聘一名厨师吗？</div>
   `,
 };
+
+const fireModal = {
+  title: "解雇厨师",
+  content:''
+};
+
 const modalType = {
   startModal: startModal,
   wantedModal: wantedModal,
+  fireModal: fireModal
 };
 
 const bgColorType = {
   green: "rgb(217, 230, 125)",
   red: "rgb(255, 179, 153)",
 };
+
 
 const allInfo = {
   hasSeats: {
@@ -139,13 +147,7 @@ const createInfoComponent = (bgColor: string, content: string) => {
   return info;
 };
 
-/* modal模块 开启与关闭 */
-function closeInfo(info: HTMLElement) {
-  info.style.display = "none";
-}
-function openInfo(info: HTMLElement) {
-  info.style.display = "block";
-}
+
 
 export {
   createModal,
@@ -155,6 +157,5 @@ export {
   modalType,
   createInfoComponent,
   allInfo,
-  closeInfo,
-  openInfo,
+
 };
