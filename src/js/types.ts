@@ -1,6 +1,5 @@
 /* 定义各种接口类型 */
-import { Customer } from "./gameCharacter";
-import { Food} from "./food"
+import { Customer } from "./Customer";
 // modal
 interface Modal {
   title: string;

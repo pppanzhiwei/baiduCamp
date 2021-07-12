@@ -1,5 +1,4 @@
 import { MenuFood } from "./types";
-import { Food } from "./food"
 
 
 
@@ -21,7 +20,7 @@ menuMap.set("凉拌黄瓜", {
   name: "凉拌黄瓜",
   cost:2,
   price: 6,
-  waitTime:10,
+  waitTime:15,
   eatTime: 10,
   cookTime: 5,
 });
@@ -148,10 +147,14 @@ const EVENT = {
   REVENUE_CHANGE: "revenueChange",
   FIRE_CHIEF: "fireChief",
   FINISH_COOK:"finishCook",
-  
+  CUSTOMER_COME:"customerCome",
+  CUSTOMER_PAY: "CUSTOMER_PAY",
+  CUSTOMER_ANGRY: "CUSTOMER_ANGRY",
+  MONEY_INSUFFICIENT:"MONEY_INSUFFICIENT",
+  FIRE_SUCCESS:"FIRE_SUCCESS"
 };
 
-
+/* TODO:如果需要动态生成菜单的时候需要 （暂时未实现） */
 const menuHTML = `
 <div class="menu-content-area">
   <div class="menu-list menu-cold">

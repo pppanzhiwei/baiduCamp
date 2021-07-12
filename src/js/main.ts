@@ -2,20 +2,15 @@ import "./reset.ts";
 import "../style/reset.css";
 import "../style/border.css";
 import "../style/index.css";
-import { EVENT, GLOBAL_DOM} from "./const_help";
-import {
-  createModal,
-  createButton,
-  createInfoComponent,
-  allInfo,
-} from "./modal";
+import { EVENT, GLOBAL_DOM } from "./const_help";
+import { createModal } from "./modal";
 import { modalType } from "./modal";
 import { disappearElement, showElement, format, debounce } from "./utils";
-import { emitter} from "./eventEmit";
+import { emitter } from "./eventEmit";
 import { Restaurant } from "./restaurant";
-
+import { bgColorType, Info, InfoType } from "./info";
 let gameModal: HTMLDivElement;
-let gameInfo: HTMLDivElement;
+const info: HTMLElement = Info();
 let restaurant: Restaurant;
 // 游戏初始化页面渲染
 window.onload = () => {
@@ -33,7 +28,9 @@ window.onload = () => {
 /* 由按钮点击后触发，开始游戏函数*/
 function gameStart() {
   // 关闭modal
+  disappearElement(gameModal)
   document.body.removeChild(gameModal);
+  gameModal = null
   // 关闭遮罩层
   disappearElement(GLOBAL_DOM.globalWrapperDOM as HTMLElement);
   // 系统开始计时
@@ -47,27 +44,37 @@ function gameStart() {
   GLOBAL_DOM.globalChiefsDOM.addEventListener("click", (e) => {
     restaurant.handleChiefAreaControl(e);
   });
-  emitter.on(EVENT.RECRUIT_CHIEF, handleRecruitChief);
-  emitter.on(EVENT.CUSTOMER_SEAT, handleCustomerSeat);
-  emitter.on(EVENT.FINISH_ORDER, handleFinishOrder);
-  emitter.on(EVENT.RECRUIT_SUCCESS, handleRecruitSuccess);
-  emitter.on(EVENT.FIRE_CHIEF, handleFireChief)
+  emitter.on(EVENT.RECRUIT_CHIEF, handleRecruitChief); // 招聘厨师事件
+  emitter.on(EVENT.CUSTOMER_SEAT, handleCustomerSeat); // 顾客入座事件
+  emitter.on(EVENT.FINISH_ORDER, handleFinishOrder); // 结束点单事件
+  emitter.on(EVENT.RECRUIT_SUCCESS, handleRecruitSuccess); // 招聘成果事件
+  emitter.on(EVENT.FIRE_CHIEF, handleFireChief); // 解雇厨师事件
+  emitter.on(EVENT.CUSTOMER_COME, handleCustomerCome); // 顾客进店事件
+  emitter.on(EVENT.CUSTOMER_PAY, handleCustomerPay); // 顾客进店事件
+  emitter.on(EVENT.CUSTOMER_ANGRY, handleCustomerAngry) // 顾客生气
+  emitter.on(EVENT.MONEY_INSUFFICIENT, handleMoneySufficient) // 金额不足，无法解雇
+  emitter.on(EVENT.FIRE_SUCCESS, handleFireSuccess)
 }
 // 解雇点击处理
 function handleFireChief(compensation, index, ele) {
   showElement(GLOBAL_DOM.globalWrapperDOM as HTMLElement);
   modalType.fireModal.content = `<div>解雇当前闲置的厨师可以帮你节省成本。</div>
   <div>解雇时会按厨师本周已经工作的日子结算工资，并会赔偿一周工资作为解约金</div>
-  <div>解雇当前厨师结算工资及解约金需要付出￥${compensation}</div>`
+  <div>解雇当前厨师结算工资及解约金需要付出￥${compensation}</div>`;
   gameModal = createModal({
     ...modalType.fireModal,
     buttons: [
       {
         title: "是的，确认解雇",
-        click: ()=>{
-          new Restaurant().handleFireAChief.bind(new Restaurant(), compensation, index, ele)()
-          handleDoNothing()
-        }
+        click: () => {
+          new Restaurant().handleFireAChief.bind(
+            new Restaurant(),
+            compensation,
+            index,
+            ele
+          )();
+          handleDoNothing();
+        },
       },
       {
         title: "先不了",
@@ -95,20 +102,33 @@ function handleRecruitChief() {
   });
 }
 function handleDoNothing() {
+  disappearElement(gameModal);
   document.body.removeChild(gameModal);
+  gameModal = null
   // 取消遮罩
   disappearWrapper();
 }
-function handleRecruitSuccess() {
+function handleRecruitSuccess(number) {
+  disappearElement(gameModal);
   document.body.removeChild(gameModal);
-  // 取消遮罩
+  gameModal = null
   disappearWrapper();
+  const type = InfoType.finishRecruit(number)
+  info.style.backgroundColor = type.color;
+  info.innerHTML = type.content
+  info.style.display = "block";
+  setTimer(5)
 }
 function handleCustomerSeat() {
   showWrapper();
 }
-function handleFinishOrder() {
+function handleFinishOrder(list,name) {
   disappearWrapper();
+  const type = InfoType.finishOrder(name)
+  info.style.backgroundColor = type.color;
+  info.innerHTML = type.content
+  info.style.display = "block";
+  setTimer(5)
 }
 
 function showWrapper() {
@@ -117,3 +137,55 @@ function showWrapper() {
 function disappearWrapper() {
   disappearElement(GLOBAL_DOM.globalWrapperDOM as HTMLElement);
 }
+function handleMoneySufficient() {
+  const type = InfoType.fireFailure
+  info.style.backgroundColor = type.color;
+  info.innerHTML = type.content
+  info.style.display = "block";
+  setTimer(5)
+}
+function handleCustomerCome() {
+  // 显示短消息
+  const type = InfoType.hasSeats;
+  info.style.backgroundColor = type.color;
+  info.innerHTML = type.content;
+  info.style.display = "block";
+  setTimer(5)
+}
+
+function handleCustomerPay(name, consume) {
+  const type = InfoType.pay(name, consume);
+  info.style.backgroundColor = type.color;
+  info.innerHTML = type.content
+  info.style.display = "block";
+  setTimer(5)
+}
+function handleCustomerAngry(name) {
+  const type = InfoType.angry(name)
+  info.style.backgroundColor = type.color;
+  info.innerHTML = type.content
+  info.style.display = "block";
+  setTimer(5)
+}
+
+
+function handleFireSuccess(money) {
+  const type = InfoType.fireSuccess(money)
+  info.style.backgroundColor = type.color;
+  info.innerHTML = type.content
+  info.style.display = "block";
+  setTimer(5)
+}
+
+
+function setTimer (delay) {
+  setTimeout(()=>{
+    info.style.display = "none"
+  },delay*1000)
+}
+document.addEventListener("click", (e) => {
+  if (info.contains(e.target as any)) {
+    info.style.display = "none";
+  }
+});
+

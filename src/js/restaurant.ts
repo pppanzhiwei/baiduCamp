@@ -1,71 +1,35 @@
 import {
-  chiefsLimit,
   chiefWeekMoney,
   EVENT,
   GLOBAL_DOM,
   maxChiefNumber,
-  minChiefNUmber,
   setSecond,
   waitLimit,
 } from "./const_help";
-import { Chief, Customer, CustomerState } from "./gameCharacter";
-import { createCustomer, MenuFood,GlobalTime } from "./types";
+import { Chief } from "./Chief";
+import { Customer, CustomerState } from "./Customer";
+import { createCustomer, GlobalTime } from "./types";
 import { format } from "./utils";
 import { emitter } from "./eventEmit";
-import {Food} from "./food"
+import { Food } from "./food";
 const one = {
-  Customer: new Customer(
-    "潘志伟",
-    "/public/assets/客人1.png",
-    50,
-    true,
-    "rgb(38, 147, 255)",
-    "rgb(0, 109, 217)"
-  ),
+  Customer: new Customer("潘志伟", "/public/assets/客人1.png", 50, true),
   time: 1,
 };
 const two = {
-  Customer: new Customer(
-    "王",
-    "/public/assets/客人2.png",
-    50,
-    true,
-    "rgb(38, 147, 255)",
-    "rgb(0, 109, 217)"
-  ),
+  Customer: new Customer("王", "/public/assets/客人2.png", 50, true),
   time: 2,
 };
 const three = {
-  Customer: new Customer(
-    "3",
-    "/public/assets/客人3.png",
-    50,
-    true,
-    "rgb(255, 38, 38)",
-    "rgb(178, 0, 0)"
-  ),
+  Customer: new Customer("3", "/public/assets/客人3.png", 50, true),
   time: 20,
 };
 const four = {
-  Customer: new Customer(
-    "4",
-    "/public/assets/客人2.png",
-    50,
-    true,
-    "rgb(255, 38, 38)",
-    "rgb(178, 0, 0)"
-  ),
+  Customer: new Customer("4", "/public/assets/客人2.png", 50, true),
   time: 40,
 };
 const five = {
-  Customer: new Customer(
-    "5",
-    "/public/assets/客人1.png",
-    50,
-    true,
-    "rgb(255, 38, 38)",
-    "rgb(178, 0, 0)"
-  ),
+  Customer: new Customer("5", "/public/assets/客人1.png", 50, true),
   time: 30,
 };
 
@@ -100,49 +64,30 @@ class Restaurant {
     }
     return Restaurant.instance;
   }
-  // TODO: 点单完毕 时间继续
+  // TODO: 点单完毕 全局时间继续 进度条时间是否要控制？
   timeContinue() {
     console.log(this.restaurantTime);
     this.gameStart();
   }
   // 说明厨师烹饪完成了
   handleCookTaskFinish(food: Food) {
-    console.log(food);
     const targetSeat = food.belongTo;
-    // 表明不需要这道菜了
-    if(targetSeat === -1) {
+    // 表明顾客放弃这道菜了
+    if (targetSeat === -1) {
       // TODO: 等待5s 是否有新的订单需要这道菜
     } else {
-      const progress = food.dom
-      progress.classList.add('dish-ready')
-      console.log(progress)
+      const progress = food.dom;
+      progress.classList.add("dish-ready");
     }
-    const targetCustomerOrderList = this.seats[targetSeat].orderList;
-
-    // 如果 progressIndex 为 -1 说明 该目标顾客已经不要这道菜了
   }
 
-  // 表示顾客点单完毕事件发生：1、重新开启计时 2、分配任务，安排厨师做菜， 接收两个参数 顾客的餐桌号与需要的食物
+  // 表示顾客点单完毕事件发生：1、重新开启计时 2、分配任务 安排厨师做菜, 顾客的餐桌号与需要的食物
   handleFinishOrder(orderList: Array<Food>) {
     // 时间
     this.timeContinue();
-    // 将顾客的点单信息加入需要分配的队列中
+    // 将顾客的点单信息加入到餐厅的队列中
     for (const orderItem of orderList) {
-      this.taskQueue.push(
-        orderItem,
-      );
-    }
-    // 将按照顺序分配至所有厨师
-    while (this.taskQueue.length > 0) {
-      for (const chief of this.chiefs) {
-        if (this.taskQueue.length === 0) {
-          break;
-        }
-        if (chief) {
-          const food = this.taskQueue.shift();
-          chief.task.push(food); // 将菜移入厨师任务队列
-        }
-      }
+      this.taskQueue.push(orderItem);
     }
     // 通知所有厨师开始做菜
     emitter.emit(EVENT.START_COOKING); // 开始做菜
@@ -172,6 +117,11 @@ class Restaurant {
   }
   // 每日结束做的事情 数据清除
   dayEndDo() {
+    for (const chief of this.chiefs) {
+      if (chief) {
+        chief.workDay += 1;
+      }
+    }
     for (const seat of this.seats) {
       if (seat) {
         this.moneyChange(seat.consume);
@@ -223,12 +173,15 @@ class Restaurant {
       }
       // 所有顾客的DOM更新 这里放这里更新 是减少DOM操作
       GLOBAL_DOM.globalWaitsDOM.appendChild(fragment);
+      // 有客人来了且有空座位,向外发出消息
+      if (new Restaurant().isSeatsEmpty() !== false) {
+        emitter.emit(EVENT.CUSTOMER_COME);
+      }
     }
   }
   // 将停止等待的顾客数据从等待区删除
   waitsDateChange(index: number) {
     new Restaurant().waits.splice(index, 1);
-    console.log(new Restaurant().waits);
   }
   // 从餐桌数组中删除数据
   seatsDateChange(index: number) {
@@ -321,6 +274,18 @@ class Restaurant {
   isChiefsEmpty(): number {
     return this.chiefs.findIndex((item) => !item);
   }
+  /* 判断是否只有一个厨师 */
+  hasOnlyOneChief(chiefs): boolean {
+    let count = 0;
+    for (const chief of chiefs) {
+      if (chief === null) count++;
+    }
+    // 只有一个初始
+    if (count === maxChiefNumber - 1) {
+      return true;
+    }
+    return false;
+  }
   /* 判断餐厅的的空位 */
   isSeatsEmpty(): boolean | number {
     const index = this.seats.findIndex((item) => item === undefined);
@@ -337,6 +302,7 @@ class Restaurant {
       addArea.style.display = "flex";
     }
   }
+
   /* 招聘厨师 */
   handleRecruitNewChief() {
     let index = this.isChiefsEmpty();
@@ -350,30 +316,26 @@ class Restaurant {
     const newChiefDOM = chief.createChiefDOM(); //
     GLOBAL_DOM.globalChiefsDOM.insertBefore(newChiefDOM, addArea);
     this.isShowAddIcon();
-    emitter.emit(EVENT.RECRUIT_SUCCESS);
+    let number = 0;
+    for (const chief of this.chiefs) {
+      if (chief !== null) {
+        number++;
+      }
+    }
+    emitter.emit(EVENT.RECRUIT_SUCCESS, number);
   }
   // 解雇厨师
   handleFireAChief(compensation, index, ele) {
-    console.log(this.chiefs);
-    if (hasOnlyOneChief(this.chiefs)) {
-      console.log("无法解雇");
-      // TODO: 短消息 只有一个厨师了，不能解雇了
-    } else if (this.revenue < compensation) {
+    if (this.revenue < compensation) {
       // TODO: 短消息 你的金额已经不足支付违约金
+      emitter.emit(EVENT.MONEY_INSUFFICIENT)
     } else {
       console.log(`解雇成功，花费${compensation}元`);
       this.moneyChange(-compensation);
       GLOBAL_DOM.globalChiefsDOM.removeChild(ele);
       this.chiefs[index] = null;
       this.isShowAddIcon();
-    }
-    function hasOnlyOneChief(chiefs): boolean {
-      let count = 0;
-      for (const chief of chiefs) {
-        if (chief === null) count++;
-      }
-      if (count === maxChiefNumber - 1) return true;
-      return false;
+      emitter.emit(EVENT.FIRE_SUCCESS, compensation)
     }
   }
   // 点击区域处理

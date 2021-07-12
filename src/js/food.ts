@@ -1,3 +1,4 @@
+
 class Food {
   public name:string
   public cost: number
@@ -26,20 +27,14 @@ class Food {
     this.waitTime = waitTime
     this.finished = false
     this.belongTo = -1
-    this.listener = []
     this.dom = null
+    this.listener = []
   }
-  // 监听食物的完成
-  watch(callback) {
-    this.listener.push(callback) // 调用该函数更新界面显示
-  }
-  finish() {
-    this.finished = true
-    setTimeout(()=>{
-      this.listener.forEach((item)=>{
-        item()
-      })
-    })
+  serveFinish() {
+    if(this.listener.length === 0) return
+    for(const item of this.listener) {
+      item()
+    }
   }
 } 
 

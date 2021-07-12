@@ -83,79 +83,13 @@ const wantedModal = {
 
 const fireModal = {
   title: "解雇厨师",
-  content:''
+  content: "",
 };
 
 const modalType = {
   startModal: startModal,
   wantedModal: wantedModal,
-  fireModal: fireModal
+  fireModal: fireModal,
 };
 
-const bgColorType = {
-  green: "rgb(217, 230, 125)",
-  red: "rgb(255, 179, 153)",
-};
-
-
-const allInfo = {
-  hasSeats: {
-    color: bgColorType.red,
-    content: "餐厅目前有空位，赶紧点击等位客人头像，让客人入座点餐吧",
-  },
-  finishOrder: (name) => {
-    return {
-      color: bgColorType.green,
-      content: `<div>${name}完成点餐，等候用餐</div>
-    <div>疯狂点击厨师头像可以加速做菜</div>`,
-    };
-  },
-  pay: (name, money) => {
-    return {
-      color: bgColorType.green,
-      content: `<div>${name}完成用餐，收获$${money}</div>
-    `,
-    };
-  },
-  angry: (name) => {
-    return {
-      color: bgColorType.red,
-      content: `${name}失望而归，别再让客人挨饿了`,
-    };
-  },
-  offer: {
-    color: bgColorType.green,
-    content: `招聘厨师成功！您已经有5名厨师了`,
-  },
-  fireFailure: {
-    color: bgColorType.red,
-    content: `你的金额已经不足支付解约金了`,
-  },
-  fireSuccess: {
-    color: bgColorType.green,
-    content: `解约厨师成功，解约支出`,
-  },
-};
-
-const createInfoComponent = (bgColor: string, content: string) => {
-  const info = document.createElement("div");
-  info.className = "info";
-  info.innerHTML = `<div class="info-content">${content}</div>`;
-  info.style.backgroundColor = bgColor;
-  document.body.append(info);
-  info.style.display = "none";
-  return info;
-};
-
-
-
-export {
-  createModal,
-  createButton,
-  closeModal,
-  openModal,
-  modalType,
-  createInfoComponent,
-  allInfo,
-
-};
+export { createModal, createButton, closeModal, openModal, modalType };
