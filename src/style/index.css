@@ -1,5 +1,16 @@
 @charset "UTF-8";
 
+body {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: url('../../public/assets/bg-min.jpg') no-repeat 0 0;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
 /* 遮罩层 */
 .bg-wrapper {
   position: fixed;
@@ -11,30 +22,14 @@
   background-color: rgba(0, 0, 0, 0.3);
 }
 
-/* 背景层 */
-.bg-img-wrapper {
-  position: fixed;
-  z-index: -1;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  background: url('../../public/assets/bg-min.jpg') no-repeat;
-  background-size: cover;
-  -webkit-background-size: cover;
-  -o-background-size: cover;
-  background-position: center 0;
-}
-
-/* .bg-img-wrapper .bg-img {
-  width: 100%;
-  height: 100%;
-} */
 
 /* 上方信息模块 */
 .information-wrapper {
   display: -webkit-box;
   display: -ms-flexbox;
+  position: absolute;
+  left: 0;
+  right: 0;
   display: flex;
   -webkit-box-pack: space-evenly;
   -ms-flex-pack: space-evenly;
@@ -80,6 +75,8 @@
 
 /* 厨师模块 */
 .chiefs-wrapper {
+  position: absolute;
+  top: 5rem;
   -webkit-box-sizing: content-box;
   box-sizing: content-box;
   background: #ffd24d;
@@ -374,6 +371,7 @@
   height: 140%;
 }
 
+/* 等待位进度条 */
 .wait-area .progress-wrapper {
   position: relative;
   top: -0.8rem;
@@ -390,7 +388,6 @@
   bottom: 0;
   width: 80%;
   color: white;
-  background: rgba(38, 147, 255);
   border: 0.12rem solid white;
 
 }
@@ -403,14 +400,88 @@
   pointer-events: none;
 }
 
+/* 放弃菜品的进度样式 */
+.dish-giveUp-progress-wrapper {
+  background: rgb(83, 83, 98);
+}
+
+.dish-giveUp-progress-wrapper .progress {
+  background: rgb(83, 83, 98);
+}
+
+.dish-giveUp-progress-wrapper .text {
+  text-decoration: line-through
+}
+
+.dish-giveUp-progress-wrapper::after {
+  display: none;
+}
+
+/* 等待菜品进度条样式 */
+.dish-wait-progress-wrapper {
+  background: rgb(255, 32, 32);
+}
+
+.dish-wait-progress-wrapper .progress {
+  background: rgb(178, 0, 0);
+}
+
+
+/* 吃饭菜品进度条样式 */
+.dish-eat-progress-wrapper {
+  background: rgb(255, 145, 34);
+
+}
+
+.dish-eat-progress-wrapper .progress {
+  background: rgb(217, 109, 0);
+  transform: translateX(0) scaleX(1);
+  animation: progressEating paused linear none
+}
+
+.dish-eat-progress-wrapper::after {
+  display: none;
+}
+
+/* 用餐完成的进度条样式 */
+.dish-finish-progress-wrapper {
+  background: rgb(0, 178, 0);
+}
+
+.dish-finish-progress-wrapper .progress {
+  background: rgb(0, 178, 0);
+}
+
+
+/* 通用进度条通用样式inner */
 .progress {
   position: absolute;
-  animation: progress 50s linear none;
-  background: blue;
+  animation: progress linear none;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 0%;
+  width: 100%;
+  will-change: transform;
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-50%) scaleX(0);
+  }
+
+  100% {
+    transform: translateX(0) scaleX(1);
+  }
+}
+
+@keyframes progressEating {
+  0% {
+    transform: translateX(-50%) scaleX(0);
+  }
+
+  100% {
+    transform: translateX(0) scaleX(1);
+  }
 }
 
 .progress-wrapper .text {
@@ -424,6 +495,7 @@
 
 .dish-ready::after {
   content: '';
+  display: block;
   position: absolute;
   border: 0.2rem solid white;
   border-radius: 50%;
@@ -432,8 +504,8 @@
   transform: translateY(-50%);
   width: 1.2rem;
   height: 1.2rem;
-  background-color: linear-gradient(to right, rgb(255, 38, 38) 0%, rgb(255, 38, 38) 50%, rgb(178, 0, 0) 51%, rgb(178, 0, 0) 100%);
   background-image: url("../../public/assets/上菜员.png");
+  background-color: linear-gradient(to right, rgb(255, 38, 38) 0%, rgb(255, 38, 38) 50%, rgb(178, 0, 0) 51%, rgb(178, 0, 0) 100%);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   pointer-events: auto;
@@ -441,19 +513,7 @@
 }
 
 
-@keyframes progress {
-  0% {
-    width: 0%;
-  }
 
-  50% {
-    width: 50%;
-  }
-
-  100% {
-    width: 100%;
-  }
-}
 
 /* 短消息 */
 .info {
@@ -690,5 +750,13 @@
   line-height: 2rem;
 }
 
+progress {
+  position: absolute;
+  bottom: -15rem;
+  font-size: 30rem;
+  border: 3rem solid #fff;
+  width: 90rem;
+  border-radius: 2rem;
+}
 
 /*# sourceMappingURL=index.css.map */

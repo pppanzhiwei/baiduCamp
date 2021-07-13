@@ -1,11 +1,5 @@
-import { GLOBAL_DOM, EVENT } from "./const_help";
-import {
-  changeBgColor,
-  changeProgressStyle,
-  createDOM,
-  createProgress,
-  removeDOM,
-} from "./utils";
+import { EVENT } from "./const_help";
+import { changeBgColor, changeProgressStyle } from "./utils";
 import { emitter } from "./eventEmit";
 import { Food } from "./food";
 import { Restaurant } from "./restaurant";
@@ -31,18 +25,13 @@ class Chief {
   public state: ChiefState;
   public task: Array<Food>;
   public workDay: number;
-  public bgColorLeft: string;
-  public bgColorRight: string;
-  public dom: HTMLElement;
+
   public id: number;
   constructor(id: number, bgColorLeft = "#ccc", bgColorRight = "#ddd") {
     this.state = ChiefState.IDLE; // 厨师的状态
-    this.id = id; // 厨师索引
+    this.id = id; // 厨师的索引
     this.task = []; // 厨师的做菜队列
     this.workDay = 0;
-    this.bgColorLeft = bgColorLeft; // 厨师背景图渐变
-    this.bgColorRight = bgColorRight; // 厨师背景图渐变
-    this.dom = null;
     emitter.on(EVENT.START_COOKING, this.handleStartWork.bind(this)); // 监听餐馆发出,表明有新的订单,可能有新的任务
   }
   changeState(state: ChiefState) {
@@ -66,19 +55,19 @@ class Chief {
   }
   // 显示解雇标志
   showFireIcon() {
-    this.dom.classList.remove("chief-wrapper-cooking");
+    document.getElementById(`chief-${this.id}`).classList.remove("chief-wrapper-cooking");
   }
   // 隐藏解雇标志
   hideFireIcon() {
-    this.dom.classList.add("chief-wrapper-cooking");
+    document.getElementById(`chief-${this.id}`).classList.add("chief-wrapper-cooking");
   }
   // 显示上菜小图标
   showServingIcon() {
-    this.dom.classList.add("chief-wrapper-cooked");
+    document.getElementById(`chief-${this.id}`).classList.add("chief-wrapper-cooked");
   }
   // 隐藏上菜小图标
   hideServingIcon() {
-    this.dom.classList.remove("chief-wrapper-cooked");
+    document.getElementById(`chief-${this.id}`).classList.remove("chief-wrapper-cooked");
   }
 
   // 转为空闲状态
@@ -98,17 +87,17 @@ class Chief {
   }
   // 处理开始烹饪逻辑
   handleStartCooking() {
-    const food =  new Restaurant().taskQueue.shift(); // 从任务队列中取出第一个菜开始制作
-    const progress = createProgress(
-      food.name,
-      this.bgColorLeft,
-      this.bgColorRight,
-      food.cookTime
-    ); // 生成进度条
-    this.dom.appendChild(progress);
+    const food = new Restaurant().taskQueue.shift(); // 从任务队列中取出第一个菜开始制作
+    const chiefDOM = document.getElementById(`chief-${this.id}`)
+    const progressContainer:HTMLElement = chiefDOM.querySelector('.progress-wrapper')
+    progressContainer.style.backgroundColor = ChiefStateProgressColor.cooking[0]
+    progressContainer.innerHTML = `
+    <div class="text">${food.name}</div>
+    <div class="progress" style="background-color:${ChiefStateProgressColor.cooking[1]}; animation-duration:${food.cookTime}s"></div>
+    `
+    progressContainer.style.display = 'block'
     this.hideFireIcon(); // 隐藏解雇标志
     this.changeChiefBgColor(); // 改变厨师的颜色样式
-    this.changeChiefProgressStyle(); // 改变样式
     // 开启做菜定时器
     new Promise((resolve, reject) => {
       emitter.emit(EVENT.REVENUE_CHANGE, -food.cost); // 扣除做菜的成本
@@ -117,10 +106,13 @@ class Chief {
         resolve(food); // 做菜结束后 状态发生改变
       }, food.cookTime * 1000);
     }).then((food: Food) => {
+      var timeout = setTimeout(() => {
+        handleServeFinish();
+      }, 5 * 1000);
       const handleServeFinish = () => {
         clearTimeout(timeout);
-        this.hideServingIcon()
-        this.dom.removeChild(progress);
+        this.hideServingIcon();
+        progressContainer.style.display = 'none'
         if (new Restaurant().taskQueue.length > 0) {
           this.changeState(ChiefState.COOKING);
         } else {
@@ -128,12 +120,9 @@ class Chief {
         }
       };
       // 结束上菜任务
-      var timeout = setTimeout(() => {
-        handleServeFinish();
-      }, 5 * 1000);
+      emitter.emit(EVENT.FINISH_COOK, food); // 通知上菜
       this.changeState(ChiefState.COOKED);
       food.listener.push(handleServeFinish.bind(this));
-      emitter.emit(EVENT.FINISH_COOK, food); // 通知上菜
     });
   }
   // 菜品制作完成逻辑处理
@@ -152,29 +141,6 @@ class Chief {
   // 改变进度条的颜色样式， 表征状态变化
   changeChiefProgressStyle() {
     changeProgressStyle(this);
-  }
-  // 生成厨师DOM结构
-  createChiefDOM() {
-    let that = this;
-    const prefix = "chief";
-    const imgUrl = "../public/assets/厨师.png";
-    const chiefDOM = createDOM(
-      "li",
-      prefix,
-      imgUrl,
-      that.bgColorLeft,
-      that.bgColorRight
-    );
-    chiefDOM.setAttribute("id", `chief-${this.id}`);
-    this.dom = chiefDOM;
-    return this.dom;
-  }
-  // 移除厨师的DOM
-  removeChiefDOM() {
-    const parent = GLOBAL_DOM.globalChiefsDOM;
-    const ele = this.dom;
-    removeDOM(parent, ele);
-    this.dom = null;
   }
 }
 

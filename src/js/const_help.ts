@@ -1,12 +1,10 @@
 import { MenuFood } from "./types";
 
-
-
 /* 用于定义dom操作需要的className */
 const className = {
-  bgWrapper: "bg-wrapper",
-  timeWeek: "time-week",
-  timeDay: "time-day",
+  bgWrapper: ".bg-wrapper",
+  timeWeek: ".time-week",
+  timeDay: ".time-day",
   revenue: "#revenue",
   waitAreas: ".wait-area",
   seatsAreas: ".customers-wrapper",
@@ -18,41 +16,41 @@ const className = {
 const menuMap = new Map<string, MenuFood>();
 menuMap.set("凉拌黄瓜", {
   name: "凉拌黄瓜",
-  cost:2,
+  cost: 2,
   price: 6,
-  waitTime:15,
+  waitTime: 15,
   eatTime: 10,
   cookTime: 5,
 });
 menuMap.set("盐水花生", {
   name: "盐水花生",
-  cost:3,
+  cost: 3,
   price: 8,
-  waitTime:10,
+  waitTime: 10,
   eatTime: 10,
   cookTime: 5,
 });
 menuMap.set("盐水鸭", {
   name: "盐水鸭",
-  cost:13,
+  cost: 13,
   price: 26,
-  waitTime:35,
+  waitTime: 35,
   eatTime: 30,
   cookTime: 30,
 });
 menuMap.set("农家小炒肉", {
   name: "农家小炒肉",
-  cost:10,
+  cost: 10,
   price: 22,
-  waitTime:40,
+  waitTime: 40,
   eatTime: 30,
   cookTime: 30,
 });
 menuMap.set("金牌烧鹅", {
   name: "金牌烧鹅",
-  cost:16,
+  cost: 16,
   price: 38,
-  waitTime:40,
+  waitTime: 40,
   eatTime: 30,
   cookTime: 30,
 });
@@ -60,7 +58,7 @@ menuMap.set("蟹粉狮子头", {
   name: "蟹粉狮子头",
   cost: 10,
   price: 22,
-  waitTime:40,
+  waitTime: 40,
   eatTime: 30,
   cookTime: 30,
 });
@@ -68,51 +66,28 @@ menuMap.set("外婆红烧肉", {
   name: "外婆红烧肉",
   cost: 16,
   price: 40,
-  waitTime:40,
+  waitTime: 40,
   eatTime: 30,
   cookTime: 30,
 });
 menuMap.set("鲜榨果汁", {
   name: "鲜榨果汁",
-  cost:6,
+  cost: 6,
   price: 12,
-  waitTime:15,
+  waitTime: 15,
   eatTime: 10,
   cookTime: 10,
 });
 menuMap.set("珍珠奶茶", {
   name: "珍珠奶茶",
-  cost:6,
+  cost: 6,
   price: 14,
   waitTime: 20,
   eatTime: 10,
   cookTime: 10,
 });
 
-const globalWeekDOM = document.getElementsByClassName(className.timeWeek)[0];
-const globalDayDOM = document.getElementsByClassName(className.timeDay)[0];
-const globalRevenueDOM = document.querySelector(className.revenue);
-const globalWrapperDOM = document.getElementsByClassName(
-  className.bgWrapper
-)[0]; // 全局遮罩层设置
-const globalWaitsDOM = document.querySelector(className.waitAreas);
-const globalSeatsDOM = document.querySelector(className.seatsAreas);
-const globalCustomerOrderDOM = document.querySelector(
-  className.orderInfoWrapper
-);
-const globalMenuDOM = document.querySelector(className.menu);
-const globalChiefsDOM = document.querySelector(className.chiefArea);
-const GLOBAL_DOM = {
-  globalWeekDOM,
-  globalDayDOM,
-  globalRevenueDOM,
-  globalWrapperDOM,
-  globalWaitsDOM,
-  globalSeatsDOM,
-  globalCustomerOrderDOM,
-  globalMenuDOM,
-  globalChiefsDOM,
-};
+
 
 /* 客人图片信息 */
 const customIcon = {
@@ -126,8 +101,8 @@ const chiefsLimit = 6; // 厨师人数限制
 const seatsLimit = 4; // 堂食人数限制
 const setSecond = 240; // 全局时间
 const chiefWeekMoney = 100; // 厨师周薪
-const maxChiefNumber = 6 // 厨师最大数
-const minChiefNUmber = 1
+const maxChiefNumber = 6; // 厨师最大数
+const minChiefNUmber = 1;
 // 等菜的耐心值
 const waitFoodPatientTime = {
   cold: 30,
@@ -139,19 +114,19 @@ const EVENT = {
   CANCEL_WAIT_SEAT: "cancelWaitSeat",
   START_COOKING: "startCooking",
   RECRUIT_CHIEF: "recruitChief",
-  RECRUIT_SUCCESS:"recruitSuccess",
+  RECRUIT_SUCCESS: "recruitSuccess",
   FINISH_ORDER: "finishOrder",
   CUSTOMER_SEAT: "customer_seat",
-  LEAVE_SEAT:"leaveSeat",
-  TIME_CONTINUE:"timeContinue",
+  LEAVE_SEAT: "leaveSeat",
+  TIME_CONTINUE: "timeContinue",
   REVENUE_CHANGE: "revenueChange",
   FIRE_CHIEF: "fireChief",
-  FINISH_COOK:"finishCook",
-  CUSTOMER_COME:"customerCome",
+  FINISH_COOK: "finishCook",
+  CUSTOMER_COME: "customerCome",
   CUSTOMER_PAY: "CUSTOMER_PAY",
   CUSTOMER_ANGRY: "CUSTOMER_ANGRY",
-  MONEY_INSUFFICIENT:"MONEY_INSUFFICIENT",
-  FIRE_SUCCESS:"FIRE_SUCCESS"
+  MONEY_INSUFFICIENT: "MONEY_INSUFFICIENT",
+  FIRE_SUCCESS: "FIRE_SUCCESS",
 };
 
 /* TODO:如果需要动态生成菜单的时候需要 （暂时未实现） */
@@ -250,16 +225,16 @@ const menuHTML = `
   <button class="button-right button" id="orderFail">不吃了</button>
 </div>`;
 export {
+  className,
   waitLimit,
   chiefsLimit,
   seatsLimit,
   EVENT,
-  GLOBAL_DOM,
   setSecond,
   menuMap,
   chiefWeekMoney,
   waitFoodPatientTime,
   maxChiefNumber,
   minChiefNUmber,
-  menuHTML
+  menuHTML,
 };

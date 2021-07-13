@@ -1,4 +1,8 @@
-import { Customer, CustomerStateBgColor, CustomerStateProgressColor } from "./Customer";
+import {
+  Customer,
+  CustomerStateBgColor,
+  CustomerStateProgressColor,
+} from "./Customer";
 import { Chief, ChiefStateBgColor, ChiefStateProgressColor } from "./Chief";
 
 /* 关闭 开启 遮罩层函数 */
@@ -30,21 +34,33 @@ function debounce(callback, delay) {
   };
 }
 
-// 用于创建角色DOM结构的通用函数
-function createDOM(
-  nodeType: string,
-  prefix: string,
-  imgUrl: string,
-  bgColorLeft: string,
-  bgColorRight: string
-) {
-  const container = document.createElement(nodeType);
-  container.setAttribute("class", `${prefix}-wrapper`);
-  const innerHTML = `<div class="${prefix}-img-wrapper" style="background:linear-gradient(to right, ${bgColorLeft} 0%, ${bgColorLeft} 50%, ${bgColorRight} 51%, ${bgColorRight} 100%)">
-  <img class="${prefix}-img" src=${imgUrl} alt="">
+// 用于创建等待区顾客DOM结构的通用函数
+function createWaitDOM(
+  icon: string,
+  colorA: string,
+  colorB: string,
+  time: number
+): string {
+  const innerHTML = `
+  <div class="wait-wrapper">
+    <div class="wait-img-wrapper" style="background:linear-gradient(to right, #2693FF 0%, #2693FF 50%, #006DD9 51%, #006DD9 100%)">
+      <img class="wait-img" src=${icon} alt>
+    </div>
+    <div class="progress-wrapper" style="background-color: ${colorA}">
+      <div class="text">等待中</div>
+      <div class="progress" style="background-color:${colorB}; animation-duration: ${time}s">
+    </div>
+  </div>
+`;
+  return innerHTML;
+}
+function createSeatDOM(icon: string, colorA: string, colorB: string) {
+  const innerHTML = `<div class="customer-img-wrapper" style="background: linear-gradient(to right, ${colorA} 0%, ${colorA} 50%, ${colorB} 51%, ${colorB} 100%)">
+  <img class="customer-img" src=${icon} alt>
+</div>
+<div class="progress-container">
 </div>`;
-  container.innerHTML = innerHTML;
-  return container;
+  return innerHTML;
 }
 
 // 用于移除角色的DOM结构的通用函数
@@ -55,28 +71,29 @@ function removeDOM(parent: Element, ele: HTMLElement) {
 // 创建进度条的通用函数
 function createProgress(
   context: string,
-  wrapperBg: string,
-  innerBg: string,
   animationTime: number,
+  className: string,
   animationState?: string
 ) {
   const progressContainer = document.createElement("div");
-  progressContainer.style.backgroundColor = wrapperBg;
-  progressContainer.className = "progress-wrapper";
+  progressContainer.className = `progress-wrapper`;
+  progressContainer.classList.add(className);
   progressContainer.innerHTML = `<div class="text">${context}</div>
-  <div class="progress" style="background-color:${innerBg}"></div>
+  <div class="progress" style="animation-duration:${animationTime}s; animation-playState = ${animationState}"></div>
   `;
-  const progress: HTMLElement = progressContainer.querySelector(".progress");
-  progress.style.animationDuration = animationTime + "s";
-  if(animationState) {
-    progress.style.animationPlayState = animationState
-  }
   return progressContainer;
 }
 
 // 更改背景颜色的通用函数
 function changeBgColor(character: Customer | Chief) {
-  const wrapper = character.dom.firstChild as HTMLElement;
+  const wrapper: HTMLElement =
+    character instanceof Customer
+      ? document
+          .getElementById(`seat-${character.seatNumber}`)
+          .querySelector(".customer-img-wrapper")
+      : document
+          .getElementById(`chief-${character.id}`)
+          .querySelector(".chief-img-wrapper");
   const state = character.state;
   const bgColorLeft =
     character instanceof Customer
@@ -94,8 +111,11 @@ function changeProgressStyle(
   color?: string
 ) {
   if (character instanceof Chief || character instanceof Customer) {
-    const progress: HTMLElement =
-      character.dom.querySelector(".progress-wrapper");
+    const wrapper: HTMLElement =
+      character instanceof Customer
+        ? document.getElementById(`seat-${character.seatNumber}`)
+        : document.getElementById(`chief-${character.id}`);
+    const progress: HTMLElement = wrapper.querySelector(".progress-wrapper");
     const inner: HTMLElement = progress.querySelector(".progress");
     const state = character.state;
     progress.style.backgroundColor =
@@ -108,11 +128,22 @@ function changeProgressStyle(
         : CustomerStateProgressColor[state][1];
   } else {
     // 针对单个进度条进行颜色修改
+    debugger;
     const progress = character;
-    progress.style.backgroundColor = color;
+    console.log(progress);
+    (progress.lastChild as HTMLElement).style.backgroundColor = color;
   }
 }
-// 更改进度条
 
-
-export { debounce, showElement, disappearElement, format,changeProgressStyle,changeBgColor,createProgress,removeDOM,createDOM};
+export {
+  debounce,
+  showElement,
+  disappearElement,
+  format,
+  changeProgressStyle,
+  changeBgColor,
+  createProgress,
+  removeDOM,
+  createWaitDOM,
+  createSeatDOM,
+};
