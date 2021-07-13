@@ -69,7 +69,7 @@ const startModal = {
   content: `<div>WebMOOC餐厅即将开业，请认真经营你的餐厅吧</div>
   <div>经营餐厅需要做好下面几件事情！加油！</div>
   <div>&nbsp</div>
-  <div class="task">招聘厨师&nbsp&nbsp&nbsp&nbsp&nbsp迎接客人&nbsp&nbsp&nbsp&nbsp&nbsp烹饪美食</div>
+  <div class="task"><span>招聘厨师</span><span>迎接客人</span><span>烹饪美食</span></div>
   `,
 };
 // 招聘

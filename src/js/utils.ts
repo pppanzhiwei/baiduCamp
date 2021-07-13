@@ -1,9 +1,12 @@
+import { Customer, CustomerStateBgColor } from "./Customer";
+import { Chief } from "./Chief";
 import {
-  Customer,
-  CustomerStateBgColor,
   CustomerStateProgressColor,
-} from "./Customer";
-import { Chief, ChiefStateBgColor, ChiefStateProgressColor } from "./Chief";
+  ChiefStateBgColor,
+  ChiefStateProgressColor,
+  customerName,
+  customerIcon,
+} from "./const_help";
 
 /* 关闭 开启 遮罩层函数 */
 function showElement(ele: HTMLElement) {
@@ -128,11 +131,22 @@ function changeProgressStyle(
         : CustomerStateProgressColor[state][1];
   } else {
     // 针对单个进度条进行颜色修改
-    debugger;
     const progress = character;
-    console.log(progress);
     (progress.lastChild as HTMLElement).style.backgroundColor = color;
   }
+}
+// 生成顾客信息
+//
+function createCustomerInformation() {
+  const nameNumber = customerName.length;
+  const iconNumber = customerIcon.length;
+  const nameIndex = Math.floor(Math.random() * nameNumber);
+  const iconIndex = Math.floor(Math.random() * iconNumber);
+  const name = customerName[nameIndex];
+  const icon = customerIcon[iconIndex];
+  const waitTime = Math.floor(Math.random() * (50 - 30 + 1) + 20);
+  const visitTime = Math.floor(Math.random() * (200 - 0 + 1));
+  return new Customer(name, icon, waitTime, visitTime)
 }
 
 export {
@@ -146,4 +160,5 @@ export {
   removeDOM,
   createWaitDOM,
   createSeatDOM,
+  createCustomerInformation,
 };

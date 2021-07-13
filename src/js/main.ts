@@ -10,11 +10,16 @@ import { emitter } from "./eventEmit";
 import { Restaurant } from "./restaurant";
 import { bgColorType, Info, InfoType } from "./info";
 import { Customer } from "./Customer";
+
+
+
+
 let gameModal: HTMLDivElement;
 const info: HTMLElement = Info();
 let restaurant: Restaurant;
 // 游戏初始化页面渲染
 window.onload = () => {
+  restaurant = new Restaurant();
   // 显示modal
   gameModal = createModal({
     ...modalType.startModal,
@@ -35,7 +40,6 @@ function gameStart() {
   // 关闭遮罩层
   disappearWrapper();
   // 系统开始计时
-  restaurant = new Restaurant();
   restaurant.dayStartDo(); // 开启新的一天
   restaurant.gameStart();
   // 开启监听器
@@ -52,16 +56,17 @@ function gameStart() {
       return;
     }
   });
+  // 监听主要用于modal 和 info 组件的显示与关闭
   emitter.on(EVENT.RECRUIT_CHIEF, handleRecruitChief); // 招聘厨师事件
   emitter.on(EVENT.CUSTOMER_SEAT, handleCustomerSeat); // 顾客入座事件
-  emitter.on(EVENT.FINISH_ORDER, handleFinishOrder); // 结束点单事件
+  emitter.on(EVENT.FINISH_ORDER, handleFinishOrderInfo); // 结束点单事件
   emitter.on(EVENT.RECRUIT_SUCCESS, handleRecruitSuccess); // 招聘成果事件
   emitter.on(EVENT.FIRE_CHIEF, handleFireChief); // 解雇厨师事件
-  emitter.on(EVENT.CUSTOMER_COME, handleCustomerCome); // 顾客进店事件
-  emitter.on(EVENT.CUSTOMER_PAY, handleCustomerPay); // 顾客进店事件
-  emitter.on(EVENT.CUSTOMER_ANGRY, handleCustomerAngry); // 顾客生气
-  emitter.on(EVENT.MONEY_INSUFFICIENT, handleMoneySufficient); // 金额不足，无法解雇
-  emitter.on(EVENT.FIRE_SUCCESS, handleFireSuccess);
+  emitter.on(EVENT.CUSTOMER_COME, handleCustomerComeInfo); // 顾客进店事件
+  emitter.on(EVENT.CUSTOMER_PAY, handleCustomerPayInfo); // 顾客支付事件
+  emitter.on(EVENT.CUSTOMER_ANGRY, handleCustomerAngryInfo); // 顾客生气
+  emitter.on(EVENT.MONEY_INSUFFICIENT, handleMoneySufficientInfo); // 金额不足，无法解雇
+  emitter.on(EVENT.FIRE_SUCCESS, handleFireSuccessInfo);
 }
 // 解雇点击处理
 function handleFireChief(compensation, index, ele) {
@@ -125,18 +130,18 @@ function handleRecruitSuccess(number) {
   info.style.backgroundColor = type.color;
   info.innerHTML = type.content;
   info.style.display = "block";
-  setTimer(5);
+  setTimer(3);
 }
 function handleCustomerSeat() {
   showWrapper();
 }
-function handleFinishOrder(customer: Customer) {
+function handleFinishOrderInfo(customer: Customer) {
   disappearWrapper();
   const type = InfoType.finishOrder(customer.name);
   info.style.backgroundColor = type.color;
   info.innerHTML = type.content;
   info.style.display = "block";
-  setTimer(5);
+  setTimer(3);
 }
 
 function showWrapper() {
@@ -151,46 +156,47 @@ function disappearWrapper() {
   );
   disappearElement(globalWrapperDOM);
 }
-function handleMoneySufficient() {
+function handleMoneySufficientInfo() {
   const type = InfoType.fireFailure;
   info.style.backgroundColor = type.color;
   info.innerHTML = type.content;
   info.style.display = "block";
-  setTimer(5);
+  setTimer(3);
 }
-function handleCustomerCome() {
+function handleCustomerComeInfo() {
   // 显示短消息
   const type = InfoType.hasSeats;
   info.style.backgroundColor = type.color;
   info.innerHTML = type.content;
   info.style.display = "block";
-  setTimer(5);
+  setTimer(3);
 }
 
-function handleCustomerPay(name, consume) {
+function handleCustomerPayInfo(name, consume) {
   const type = InfoType.pay(name, consume);
   info.style.backgroundColor = type.color;
   info.innerHTML = type.content;
   info.style.display = "block";
-  setTimer(5);
+  setTimer(3);
 }
-function handleCustomerAngry(name) {
+function handleCustomerAngryInfo(name) {
   const type = InfoType.angry(name);
   info.style.backgroundColor = type.color;
   info.innerHTML = type.content;
   info.style.display = "block";
-  setTimer(5);
+  setTimer(3);
 }
 
-function handleFireSuccess(money) {
+function handleFireSuccessInfo(money) {
   const type = InfoType.fireSuccess(money);
   info.style.backgroundColor = type.color;
   info.innerHTML = type.content;
   info.style.display = "block";
-  setTimer(5);
+  setTimer(3);
 }
 
 let timer = null;
+// info的显示时间
 function setTimer(delay) {
   if (timer) {
     clearTimeout(timer);

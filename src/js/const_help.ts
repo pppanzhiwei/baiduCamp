@@ -35,7 +35,7 @@ menuMap.set("盐水鸭", {
   cost: 13,
   price: 26,
   waitTime: 35,
-  eatTime: 30,
+  eatTime: 20,
   cookTime: 30,
 });
 menuMap.set("农家小炒肉", {
@@ -43,7 +43,7 @@ menuMap.set("农家小炒肉", {
   cost: 10,
   price: 22,
   waitTime: 40,
-  eatTime: 30,
+  eatTime: 20,
   cookTime: 30,
 });
 menuMap.set("金牌烧鹅", {
@@ -51,7 +51,7 @@ menuMap.set("金牌烧鹅", {
   cost: 16,
   price: 38,
   waitTime: 40,
-  eatTime: 30,
+  eatTime: 20,
   cookTime: 30,
 });
 menuMap.set("蟹粉狮子头", {
@@ -59,7 +59,7 @@ menuMap.set("蟹粉狮子头", {
   cost: 10,
   price: 22,
   waitTime: 40,
-  eatTime: 30,
+  eatTime: 20,
   cookTime: 30,
 });
 menuMap.set("外婆红烧肉", {
@@ -67,7 +67,7 @@ menuMap.set("外婆红烧肉", {
   cost: 16,
   price: 40,
   waitTime: 40,
-  eatTime: 30,
+  eatTime: 20,
   cookTime: 30,
 });
 menuMap.set("鲜榨果汁", {
@@ -87,14 +87,34 @@ menuMap.set("珍珠奶茶", {
   cookTime: 10,
 });
 
-
-
 /* 客人图片信息 */
-const customIcon = {
-  Icon1: "public/assets/客人1.png",
-  Icon2: "public/assets/客人2.png",
-  Icon3: "public/assets/客人2.png",
-};
+const customerIcon = [
+  "./public/assets/客人1.png",
+  "./public/assets/客人2.png",
+  "./public/assets/客人3.png",
+  "./public/assets/客人4.png",
+  "./public/assets/客人5.png",
+  "./public/assets/客人6.png",
+  "./public/assets/客人7.png",
+];
+const customerName = [
+  "恨桃",
+  "依秋",
+  "天蓉",
+  "飞莲",
+  "以珊",
+  "曼岚",
+  "凡梦",
+  "晓凡",
+  "雨珍",
+  "谷槐",
+  "依伊",
+  "芳荷",
+  "青寒",
+  "笑天",
+  "薄荷",
+];
+
 /* 限制常量 */
 const waitLimit = 6; //等待区限制
 const chiefsLimit = 6; // 厨师人数限制
@@ -224,7 +244,39 @@ const menuHTML = `
   <button class="button-left button"  id="orderSuccess">点好了，快点上菜</button>
   <button class="button-right button" id="orderFail">不吃了</button>
 </div>`;
+
+const CustomerStateBgColor = {
+  init: ["#2693FF", "#006DD9"],
+  waitDish: ["#FF2626", "#B20000"],
+  eating: ["#FF9122", "#D96D00"],
+  waitPay: ["#80FF00", "#00B200"],
+  angry: ["rgb(102,26,0)", "rgb(64, 16, 0)"],
+};
+const CustomerStateProgressColor = {
+  waiting: ["#2693FF", "#006DD9"],
+  eating: ["#FF9122", "#D96D00"],
+  used: "#00B200",
+  giveUp: "#535362",
+};
+
+/* 状态相关联的类名 */
+const ChiefStateBgColor = {
+  idle: ["#DDDDDD", "#AAAAAA"],
+  cooking: ["#FF9122", "#D96D00"],
+  cooked: ["#AC91FF", "#7A4DFF"],
+};
+const ChiefStateProgressColor = {
+  cooking: ["#FF9122", "#D96D00"],
+  cooked: ["#AC91FF", "#AC91FF"],
+};
+
 export {
+  customerIcon,
+  customerName,
+  ChiefStateBgColor,
+  ChiefStateProgressColor,
+  CustomerStateProgressColor,
+  CustomerStateBgColor,
   className,
   waitLimit,
   chiefsLimit,

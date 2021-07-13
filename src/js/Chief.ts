@@ -1,4 +1,4 @@
-import { EVENT } from "./const_help";
+import { ChiefStateProgressColor, EVENT } from "./const_help";
 import { changeBgColor, changeProgressStyle } from "./utils";
 import { emitter } from "./eventEmit";
 import { Food } from "./food";
@@ -10,24 +10,13 @@ enum ChiefState {
   COOKING = "cooking",
   COOKED = "cooked",
 }
-/* 状态相关联的类名 */
-const ChiefStateBgColor = {
-  idle: ["#DDDDDD", "#AAAAAA"],
-  cooking: ["#FF9122", "#D96D00"],
-  cooked: ["#AC91FF", "#7A4DFF"],
-};
-const ChiefStateProgressColor = {
-  cooking: ["#FF9122", "#D96D00"],
-  cooked: ["#AC91FF", "#AC91FF"],
-};
-
 class Chief {
   public state: ChiefState;
   public task: Array<Food>;
   public workDay: number;
 
   public id: number;
-  constructor(id: number, bgColorLeft = "#ccc", bgColorRight = "#ddd") {
+  constructor(id: number) {
     this.state = ChiefState.IDLE; // 厨师的状态
     this.id = id; // 厨师的索引
     this.task = []; // 厨师的做菜队列
@@ -55,21 +44,28 @@ class Chief {
   }
   // 显示解雇标志
   showFireIcon() {
-    document.getElementById(`chief-${this.id}`).classList.remove("chief-wrapper-cooking");
+    document
+      .getElementById(`chief-${this.id}`)
+      .classList.remove("chief-wrapper-cooking");
   }
   // 隐藏解雇标志
   hideFireIcon() {
-    document.getElementById(`chief-${this.id}`).classList.add("chief-wrapper-cooking");
+    document
+      .getElementById(`chief-${this.id}`)
+      .classList.add("chief-wrapper-cooking");
   }
   // 显示上菜小图标
   showServingIcon() {
-    document.getElementById(`chief-${this.id}`).classList.add("chief-wrapper-cooked");
+    document
+      .getElementById(`chief-${this.id}`)
+      .classList.add("chief-wrapper-cooked");
   }
   // 隐藏上菜小图标
   hideServingIcon() {
-    document.getElementById(`chief-${this.id}`).classList.remove("chief-wrapper-cooked");
+    document
+      .getElementById(`chief-${this.id}`)
+      .classList.remove("chief-wrapper-cooked");
   }
-
   // 转为空闲状态
   handleIdle() {
     this.showFireIcon();
@@ -88,21 +84,23 @@ class Chief {
   // 处理开始烹饪逻辑
   handleStartCooking() {
     const food = new Restaurant().taskQueue.shift(); // 从任务队列中取出第一个菜开始制作
-    const chiefDOM = document.getElementById(`chief-${this.id}`)
-    const progressContainer:HTMLElement = chiefDOM.querySelector('.progress-wrapper')
-    progressContainer.style.backgroundColor = ChiefStateProgressColor.cooking[0]
+    const chiefDOM = document.getElementById(`chief-${this.id}`);
+    const progressContainer: HTMLElement =
+      chiefDOM.querySelector(".progress-wrapper");
+    progressContainer.style.backgroundColor =
+      ChiefStateProgressColor.cooking[0];
     progressContainer.innerHTML = `
     <div class="text">${food.name}</div>
     <div class="progress" style="background-color:${ChiefStateProgressColor.cooking[1]}; animation-duration:${food.cookTime}s"></div>
-    `
-    progressContainer.style.display = 'block'
+    `;
+    progressContainer.style.display = "block";
     this.hideFireIcon(); // 隐藏解雇标志
     this.changeChiefBgColor(); // 改变厨师的颜色样式
     // 开启做菜定时器
     new Promise((resolve, reject) => {
       emitter.emit(EVENT.REVENUE_CHANGE, -food.cost); // 扣除做菜的成本
       // 开启定时器开始做菜
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         resolve(food); // 做菜结束后 状态发生改变
       }, food.cookTime * 1000);
     }).then((food: Food) => {
@@ -112,14 +110,13 @@ class Chief {
       const handleServeFinish = () => {
         clearTimeout(timeout);
         this.hideServingIcon();
-        progressContainer.style.display = 'none'
+        progressContainer.style.display = "none";
         if (new Restaurant().taskQueue.length > 0) {
           this.changeState(ChiefState.COOKING);
         } else {
           this.changeState(ChiefState.IDLE);
         }
       };
-      // 结束上菜任务
       emitter.emit(EVENT.FINISH_COOK, food); // 通知上菜
       this.changeState(ChiefState.COOKED);
       food.listener.push(handleServeFinish.bind(this));
@@ -144,4 +141,4 @@ class Chief {
   }
 }
 
-export { ChiefStateBgColor, ChiefStateProgressColor, Chief, ChiefState };
+export { Chief, ChiefState };

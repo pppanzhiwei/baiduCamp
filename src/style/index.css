@@ -76,7 +76,7 @@ body {
 /* 厨师模块 */
 .chiefs-wrapper {
   position: absolute;
-  top: 5rem;
+  top: 4.2rem;
   -webkit-box-sizing: content-box;
   box-sizing: content-box;
   background: #ffd24d;
@@ -169,12 +169,12 @@ body {
 .chief-wrapper-cooked::before {
   content: '';
   position: absolute;
-  bottom: 1.5rem;
+  bottom: 1.2rem;
   left: 0;
-  width: 2rem;
-  height: 2rem;
+  width: 3rem;
+  height: 3rem;
   background-image:
-    url("../../public/assets/上菜员.png");
+    url("../../public/assets/food.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   pointer-events: auto;
@@ -492,21 +492,37 @@ body {
   width: 100%;
   z-index: 2;
 }
-
-.dish-ready::after {
+.dish-ready::before {
   content: '';
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: absolute;
   border: 0.2rem solid white;
   border-radius: 50%;
   left: 100%;
   top: 50%;
   transform: translateY(-50%);
-  width: 1.2rem;
-  height: 1.2rem;
-  background-image: url("../../public/assets/上菜员.png");
-  background-color: linear-gradient(to right, rgb(255, 38, 38) 0%, rgb(255, 38, 38) 50%, rgb(178, 0, 0) 51%, rgb(178, 0, 0) 100%);
-  background-size: 100% 100%;
+  width: 1.6rem;
+  height: 1.6rem;
+  background: linear-gradient(to right, rgb(255, 38, 38) 0%, rgb(255, 38, 38) 50%, rgb(178, 0, 0) 51%, rgb(178, 0, 0) 100%);
+  z-index: 2
+}
+.dish-ready::after {
+  content: '';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  border: 0.2rem solid white;
+  border-radius: 50%;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.6rem;
+  height: 1.6rem;
+  background-image: url("../../public/assets/food.png");
+  background-size: contain;
   background-repeat: no-repeat;
   pointer-events: auto;
   z-index: 3
@@ -523,19 +539,18 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   background: rgb(217, 230, 125);
-  height: 4rem;
-  line-height: 2rem;
-  width: 16rem;
+  height: 3rem;
+  line-height: 1.5rem;
+  width: 15rem;
   border: 0.5rem solid #fff;
   border-radius: 1.4rem;
   color: #796529;
-  font-weight: 600;
+  font-weight: 520;
+  padding: 1rem;
+  word-wrap: break-word;
+  z-index: 20
 }
 
-.info .info-content {
-  padding: .1rem;
-  word-wrap: break-word;
-}
 
 
 /* modal模块 */
@@ -569,7 +584,7 @@ body {
   word-wrap: break-word;
   line-height: 1.4rem;
   color: #977207;
-  font-weight: 600;
+  font-weight: 540;
 }
 
 .modal .modal-button-area {
@@ -613,6 +628,8 @@ body {
 }
 
 .modal .task {
+  display: flex;
+  justify-content:space-between;
   font-size: 1rem;
   font-weight: bold;
 }
@@ -730,8 +747,7 @@ body {
   height: 5rem;
   border: 0.4rem solid #fff;
   border-radius: 50%;
-  background: -webkit-gradient(linear, left top, right top, from(#dddddd), color-stop(50%, #dddddd), color-stop(51%, #aaaaaa), to(#aaaaaa));
-  background: linear-gradient(to right, #dddddd 0%, #dddddd 50%, #aaaaaa 51%, #aaaaaa 100%);
+  background: linear-gradient(to right, rgb(38, 147, 255) 0%, rgb(38, 147, 255) 50%, rgb(0, 109, 217) 51%, rgb(0, 109, 217) 100%);
   display: flex;
   align-items: center;
   justify-content: center;

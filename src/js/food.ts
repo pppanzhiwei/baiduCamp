@@ -11,6 +11,7 @@ class Food {
   public belongTo: number // 对应桌子
   public dom: HTMLElement // 对应渲染的dom
   public listener:Array<any>
+  public timer
   constructor({
     name,
     cost,
@@ -29,6 +30,7 @@ class Food {
     this.belongTo = -1
     this.dom = null
     this.listener = []
+    this.timer = null
   }
   serveFinish() {
     if(this.listener.length === 0) return

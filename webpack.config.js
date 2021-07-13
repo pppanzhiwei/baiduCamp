@@ -3,6 +3,7 @@ const {
 } = require('path')
 const autoprefixer = require('autoprefixer')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin').CleanWebpackPlugin;
 module.exports = {
   mode: 'development', // production
   devtool: 'source-map',
@@ -13,12 +14,11 @@ module.exports = {
     index: resolve(__dirname, './src/js/main.ts')
   },
   output: {
+    publicPath: './',
     path: resolve(__dirname, './dist'),
-    filename: 'js/[name].js'
+    filename:'[name].[chunkhash:8].js'
   },
   resolve: {
-    // 执行import { showHelloWorld } from './common'; 
-    // 先尝试 ts 后缀的 TypeScript 源码文件，在尝试 js 后缀 JavaScript 源码文件
     extensions: ['.ts', '.js'] 
   },
   module: {
@@ -84,7 +84,8 @@ module.exports = {
         removeComments: true,
         collapseWhitespace: true
       }
-    })
+    }),
+    new CleanWebpackPlugin()
   ],
   devServer: {
     watchOptions: {

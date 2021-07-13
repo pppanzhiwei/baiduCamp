@@ -4,7 +4,6 @@ const Info = (function () {
     if (!info) {
       info = document.createElement("div");
       info.className = "info";
-      info.innerHTML = "我是一个全局唯一的Modal";
       info.style.display = "none";
       document.body.appendChild(info);
     }

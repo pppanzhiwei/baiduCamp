@@ -1,4 +1,4 @@
-import { EVENT, menuMap, className } from "./const_help";
+import { EVENT, menuMap, className, CustomerStateBgColor } from "./const_help";
 import {
   changeBgColor,
   createWaitDOM,
@@ -20,52 +20,39 @@ enum CustomerState {
   ANGRY = "angry",
   LEAVE = "leave",
 }
-const CustomerStateBgColor = {
-  init: ["#2693FF", "#006DD9"],
-  waitDish: ["#FF2626", "#B20000"],
-  eating: ["#FF9122", "#D96D00"],
-  waitPay: ["#80FF00", "#00B200"],
-  angry: ["rgb(102,26,0)", "rgb(64, 16, 0)"],
-};
-const CustomerStateProgressColor = {
-  waiting: ["#2693FF", "#006DD9"],
-  eating: ["#FF9122", "#D96D00"],
-  used: "#00B200",
-  giveUp: "#535362",
-};
-/* 顾客类 每一个顾客实例其进店的行为是一个状态机*/
+
+/* 顾客类*/
 class Customer {
   public name: string; // 姓名
   public icon: string; // 头像
+  public visitTime: number; // 拜访餐厅的时间
   public timer: NodeJS.Timeout | null; // 等位 进餐定时器
   public orderList: Array<Food>; // 菜单
   public waitPatient: number; // 等位耐心度
-  public chance: boolean; // 今日进店机会
   public waitDishTimer: Array<any>; // 等餐定时器数组
   public eatList: Array<Food>; // 实际进餐队列
   public consume: number; // 总花费
   public seatNumber: number; // 餐桌号码
   public waitNumber: number; // 等待区索引
   public state: CustomerState; // 状态
-
   public handleMenuClick;
   // 属性为姓名、头像、耐心值
   constructor(
     name: string,
     icon: string,
     waitPatient: number,
-    chance: boolean
+    visitTime: number
   ) {
     this.name = name; // 顾客姓名
     this.icon = icon; // 顾客头像
     this.orderList = []; // 顾客的点单列表
     this.timer = null; // 顾客用于等位与进餐的定时器
     this.waitPatient = waitPatient; // 等待位置的时间
-    this.chance = chance; // 今日进店机会
     this.waitDishTimer = []; // 等餐定时器数组
     this.eatList = []; // 实际进餐队列
     this.consume = 0; // 吃饭花费
     this.seatNumber = -1; // 餐桌序号
+    this.visitTime = visitTime;
     this.handleMenuClick = null;
     // 初始化状态
     this.state = CustomerState.INIT; // 厨师状态
@@ -78,9 +65,6 @@ class Customer {
         break;
       }
       case CustomerState.LEAVE: {
-        const dom = document.getElementById(`seat-${this.seatNumber}`);
-        dom.classList.remove("customer-wrapper-angry");
-        dom.classList.remove("customer-wrapper-pay");
         this.leave();
         break;
       }
@@ -93,7 +77,6 @@ class Customer {
         break;
       }
       case CustomerState.EATING: {
-        
         this.changeCustomerBgColor();
         this.handleStartEating();
         break;
@@ -106,9 +89,7 @@ class Customer {
         break;
       }
       case CustomerState.WAIT_PAY: {
-        this.changeCustomerBgColor();
-        const dom = document.getElementById(`seat-${this.seatNumber}`);
-        dom.classList.add("customer-wrapper-pay");
+
         this.handlePay();
         break;
       }
@@ -119,7 +100,12 @@ class Customer {
     const customerDOM = document.createElement("div");
     customerDOM.setAttribute("class", "wait-customer");
     customerDOM.setAttribute("id", `wait-${this.name}`);
-    const innerHTML = createWaitDOM(this.icon,CustomerStateBgColor.init[0],CustomerStateBgColor.init[1],this.waitPatient)
+    const innerHTML = createWaitDOM(
+      this.icon,
+      CustomerStateBgColor.init[0],
+      CustomerStateBgColor.init[1],
+      this.waitPatient
+    );
     customerDOM.innerHTML = innerHTML;
     return customerDOM;
   }
@@ -141,15 +127,17 @@ class Customer {
   // 创建并渲染餐桌位置的DOM
   createSeatCustomerDOM(index: number) {
     const container = document.getElementById(`seat-${index}`);
-    const innerHTML = createSeatDOM(this.icon, CustomerStateBgColor.waitDish[0], CustomerStateBgColor.waitDish[1])
+    const innerHTML = createSeatDOM(
+      this.icon,
+      CustomerStateBgColor.waitDish[0],
+      CustomerStateBgColor.waitDish[1]
+    );
     container.innerHTML = innerHTML;
   }
   // 餐桌位置DOM消失
   removeFromSeatsDOM() {
     const seat = document.getElementById(`seat-${this.seatNumber}`);
-    seat.innerHTML = `
-      <div class="customer-img-wrapper">
-      </div>`;
+    seat.innerHTML = `<div class="customer-img-wrapper"></div>`;
   }
   // 更改顾客的背景颜色
   changeCustomerBgColor() {
@@ -325,6 +313,7 @@ class Customer {
   }
   // 等待上菜逻辑处理
   handleWaitDishes(index: number) {
+    let dishesNumber = this.orderList.length;
     let _this = this;
     // 生成餐桌位置的的DOM
     this.createSeatCustomerDOM(index);
@@ -337,9 +326,12 @@ class Customer {
     for (const food of this.orderList) {
       this.waitDishTimer.push(waitTimeout(food.waitTime, food));
     }
-    // 使用promiseAll表征所有菜都没有上齐
+    // 使用promiseAll表示所有菜都没有上齐
     Promise.all(this.waitDishTimer).then((result) => {
+      console.log("promise all 触发了");
       this.changeState(CustomerState.ANGRY); // 变更为生气状态
+    }).catch((res)=>{
+      console.log('至少上了一个菜')
     });
     // 等餐计时函数，返回promise
     function waitTimeout(timer: number, food: Food) {
@@ -355,8 +347,8 @@ class Customer {
           _this.orderList.splice(index, 1);
           _this.eatList.push(food);
           // 由等餐状态进入到进餐状态
-          food.dom.classList.remove('dish-ready')
-          food.dom.classList.add('dish-eat-progress-wrapper')
+          food.dom.classList.remove("dish-ready");
+          food.dom.classList.add("dish-eat-progress-wrapper");
           _this.changeState(CustomerState.EATING, food);
           food.dom.removeEventListener("click", serveTheDish);
           reject(); // 触发状态改变
@@ -366,8 +358,11 @@ class Customer {
         _this.orderList.splice(index, 1);
         _this.waitDishTimeout(food);
         // 等餐时间到了 判断是否需要进入付款阶段 即没有餐了
-        if (_this.waitDishTimer.length === 0 && _this.eatList.length === 0) {
-          _this.changeState(CustomerState.WAIT_PAY);
+        if (_this.orderList.length === 0 && _this.eatList.length === 0) {
+          setTimeout(() => {
+            if(_this.state !== CustomerState.ANGRY)
+            _this.changeState(CustomerState.WAIT_PAY);
+          });
         }
       });
     }
@@ -415,42 +410,47 @@ class Customer {
     });
   }
   handlePay() {
-    let _this = this;
+    this.changeCustomerBgColor();
     const dom = document.getElementById(`seat-${this.seatNumber}`);
-    dom.addEventListener("click", clickMoney.bind(_this));
-    function clickMoney() {
-      emitter.emit(EVENT.CUSTOMER_PAY, this.name, this.consume);
+    dom.classList.add("customer-wrapper-pay");
+    dom.addEventListener("click", this.clickIcon.bind(this));
+  }
+  clickIcon() {
+      if(this.state === CustomerState.WAIT_PAY) {
+        emitter.emit(EVENT.CUSTOMER_PAY, this.name,this.consume);
+      } else {
+        emitter.emit(EVENT.CUSTOMER_ANGRY, this.name);
+      }
       this.changeState(CustomerState.LEAVE);
-      dom.removeEventListener("click", clickMoney);
-    }
   }
   // 安抚顾客
   handleSatisfy() {
-    let _this = this;
     const dom = document.getElementById(`seat-${this.seatNumber}`);
-    dom.addEventListener("click", clickStar.bind(_this));
-    function clickStar() {
-      dom.removeEventListener("click", clickStar);
-      emitter.emit(EVENT.CUSTOMER_ANGRY, this.name);
-      this.changeState(CustomerState.LEAVE);
-    }
+    dom.addEventListener("click", this.clickIcon.bind(this));
   }
   leave() {
     // 1、删除餐桌顾客的DOM 2、通知餐馆更新餐桌数据 3、通知餐馆更新金钱数据
-    this.removeFromSeatsDOM();
-    emitter.emit(EVENT.LEAVE_SEAT, this.seatNumber);
-    emitter.emit(EVENT.REVENUE_CHANGE, this.consume);
+    if(this.seatNumber >=0) {
+      const dom = document.getElementById(`seat-${this.seatNumber}`);
+      dom.classList.remove("customer-wrapper-angry", "customer-wrapper-pay");
+      this.removeFromSeatsDOM();
+      dom.outerHTML = dom.outerHTML
+      emitter.emit(EVENT.LEAVE_SEAT, this.seatNumber); // 离开座位
+      if(this.consume) {
+        emitter.emit(EVENT.REVENUE_CHANGE, this.consume) // 餐馆收入变更
+      }
+    }
     this.reset();
   }
   reset() {
     // 状态初始化
-    this.chance = false;
     this.eatList = [];
     this.orderList = [];
     this.state = CustomerState.INIT;
     this.seatNumber = -1;
     this.waitNumber = -1;
     this.consume = 0;
+    this.visitTime = 0;
     if (this.timer) {
       clearTimeout(this.timer);
     }
@@ -461,9 +461,4 @@ class Customer {
     }
   }
 }
-export {
-  Customer,
-  CustomerState,
-  CustomerStateBgColor,
-  CustomerStateProgressColor,
-};
+export { Customer, CustomerState, CustomerStateBgColor };

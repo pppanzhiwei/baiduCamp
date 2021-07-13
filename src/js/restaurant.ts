@@ -8,30 +8,10 @@ import {
 } from "./const_help";
 import { Chief, ChiefState } from "./Chief";
 import { Customer, CustomerState } from "./Customer";
-import { createCustomer, GlobalTime } from "./types";
-import { format } from "./utils";
+import { GlobalTime } from "./types";
+import { createCustomerInformation, format } from "./utils";
 import { emitter } from "./eventEmit";
 import { Food } from "./food";
-const one = {
-  Customer: new Customer("潘志伟", "/public/assets/客人1.png", 50, true),
-  time: 1,
-};
-const two = {
-  Customer: new Customer("王", "/public/assets/客人2.png", 50, true),
-  time: 2,
-};
-const three = {
-  Customer: new Customer("3", "/public/assets/客人3.png", 50, true),
-  time: 20,
-};
-const four = {
-  Customer: new Customer("4", "/public/assets/客人2.png", 50, true),
-  time: 40,
-};
-const five = {
-  Customer: new Customer("5", "/public/assets/客人1.png", 50, true),
-  time: 30,
-};
 
 // 餐馆类
 class Restaurant {
@@ -41,9 +21,10 @@ class Restaurant {
   public waits: Array<Customer>; // 等待区数组
   public seats: Array<Customer>; // 餐桌区数组
   public chiefs: Array<Chief>; // 厨师区数组
-  public customers: Array<createCustomer>; // 一日餐馆的顾客数组
+  public customers: Array<Customer>; // 一日餐馆的顾客数组
   static instance: Restaurant;
   public taskQueue: Array<Food>; // 任务队列
+  public finishQueue: Array<Food>;
   constructor() {
     if (!Restaurant.instance) {
       this.restaurantTime = { week: 1, day: 1, second: 1 };
@@ -51,8 +32,11 @@ class Restaurant {
       this.waits = []; // 等待区
       this.seats = new Array(4).fill(undefined); // 维护4个座位
       this.chiefs = new Array(maxChiefNumber).fill(null); // 维护厨师
+      this.chiefs[0] = new Chief(0);
+      this.chiefs[0].hideFireIcon();
       this.customers = []; // 维护日访问的顾客数据
-      this.taskQueue = []; // 维护任务队列
+      this.taskQueue = []; // 维护做菜的任务队列
+      this.finishQueue = []; // 维护做好的菜的队列
       emitter.on(EVENT.CANCEL_WAIT_SEAT, this.waitsDateChange.bind(this)); // 订阅顾客放弃等位的事件并进行处理
       emitter.on(EVENT.LEAVE_SEAT, this.seatsDateChange.bind(this)); // 订阅顾客离开餐桌事件
       emitter.on(EVENT.REVENUE_CHANGE, this.moneyChange.bind(this)); // 订阅顾客消费完成事件处理
@@ -69,9 +53,14 @@ class Restaurant {
   // 说明厨师烹饪完成了
   handleCookTaskFinish(food: Food) {
     const targetSeat = food.belongTo;
-    // 表明顾客放弃这道菜了
+    // 表明顾客已经放弃这道菜了
     if (targetSeat === -1) {
+      this.finishQueue.push(food);
       // TODO: 等待5s 是否有新的订单需要这道菜
+      food.timer = setTimeout(() => {
+        const index = this.finishQueue.findIndex((item) => item === food);
+        if (index >= 0) this.finishQueue.splice(index, 1);
+      }, 5000);
     } else {
       const progress = food.dom;
       progress.classList.add("dish-ready");
@@ -79,15 +68,31 @@ class Restaurant {
   }
 
   // 表示顾客点单完毕事件发生：1、重新开启计时 2、分配任务 安排厨师做菜, 顾客的餐桌号与需要的食物
-  handleFinishOrder(customer:Customer) {
-    // 时间
-    this.seats[customer.seatNumber] = customer
+  handleFinishOrder(customer: Customer) {
+    // 时间继续 TODO: 需要完善的地方
+    this.seats[customer.seatNumber] = customer;
     this.timeContinue();
     // 将顾客的点单信息加入到餐厅的队列中
     for (const orderItem of customer.orderList) {
-      this.taskQueue.push(orderItem);
+      // 如果当前队列中存在已经做好的菜,
+      let index = this.finishQueue.findIndex(
+        (item) => item.name === orderItem.name
+      );
+      if (index >= 0) {
+        this.finishQueue.splice(index, 1);
+        const food = this.finishQueue[index];
+        clearTimeout(food.timer);
+        this.finishQueue.splice(index, 1);
+        emitter.emit(EVENT.FINISH_COOK, orderItem, index);
+        orderItem.listener = food.listener;
+        orderItem.dom.classList.add("dish-ready"); // 等待上菜
+
+        // 显示上菜
+      } else {
+        this.taskQueue.push(orderItem);
+      }
     }
-    // 通知所有厨师开始做菜
+    // 有订单通知厨师开始做菜
     emitter.emit(EVENT.START_COOKING); // 开始做菜
   }
   // 游戏开始 餐馆开启全局定时器,用于时间相关显示的DOM渲染 及金钱DOM渲染 事件触发
@@ -125,18 +130,19 @@ class Restaurant {
         this.moneyChange(seat.consume);
       }
     }
-    this.seats.fill(undefined); // 座位区数据清除
-    this.customers = []; // 顾客数据清除
-    // 等待区与座位区dom清除
     this.waitsDOMReset();
     this.seatsDOMReset();
+    this.seats.fill(undefined); // 座位区的数据清除
+    this.customers = []; // 顾客数组清空
+    // 等待区与座位区dom清除
   }
-  // 每日开始所做的事情，更新一天顾客数据
+  // 每日开始所做的事情，生成一天内拜访餐厅的顾客数据
   dayStartDo() {
-    // TODO: function customersCreate
-    this.customers = [one, two, three, four, five].sort(
-      (a, b) => a.time - b.time
-    );
+    const totalNumber = Math.floor(Math.random() * (60 - 30 + 1) + 30);
+    for (let i = 0; i < totalNumber; i++) {
+      this.customers.push(createCustomerInformation());
+    }
+    this.customers.sort((a, b) => a.visitTime - b.visitTime);
   }
   // 每秒所做的事情
   secondToDO() {
@@ -150,20 +156,21 @@ class Restaurant {
       // 获取得到当前时刻前往餐馆的顾客
       let len = that.waits.length;
       const currentTime = that.restaurantTime.second;
-      let customers = that.customers.filter((item) => item.time == currentTime);
-      // 当前时刻不存在进店顾客 doNothing
+      let customers = that.customers.filter(
+        (item) => item.visitTime == currentTime
+      );
       if (!customers.length) return;
       // 2、加入等待位的客人
       let index = 0;
       let customersLen = customers.length;
       // 创建缓存DOM
-      let  waitArea = document.querySelector(className.waitAreas)
+      let waitArea = document.querySelector(className.waitAreas);
       const fragment = document.createDocumentFragment();
       while (len < waitLimit && index < customersLen) {
-        const customer: Customer = customers[index].Customer;
+        const customer: Customer = customers[index];
         fragment.appendChild(customer.handleCreateWaitsDOM()); // 顾客DOM
         // 数据更改
-        that.waits.push(customer); // 
+        that.waits.push(customer); //
         // 去更新DOM结构
         customer.changeState(CustomerState.WAIT_SEAT);
         len++;
@@ -171,7 +178,7 @@ class Restaurant {
       }
       // 所有顾客的DOM更新减少DOM操作
       waitArea.appendChild(fragment);
-      waitArea = null
+      waitArea = null;
       // 有客人来了且有空座位,向外发出消息，显示Info
       if (new Restaurant().isSeatsEmpty() !== false) {
         emitter.emit(EVENT.CUSTOMER_COME);
@@ -202,8 +209,8 @@ class Restaurant {
   timeChange(time: GlobalTime, setSecond: number) {
     let { week, day, second } = this.restaurantTime;
     return () => {
-      const dayDOM = document.querySelector(className.timeDay)
-      const weekDOM = document.querySelector(className.timeWeek)
+      const dayDOM = document.querySelector(className.timeDay);
+      const weekDOM = document.querySelector(className.timeWeek);
       //
       this.secondToDO();
       if (second >= 1 && second < setSecond) {
@@ -235,34 +242,34 @@ class Restaurant {
   }
   // 更新金钱变化
   moneyChange(value) {
-    const waitDOM = document.querySelector(className.revenue)
+    const waitDOM = document.querySelector(className.revenue);
     this.revenue += value;
     waitDOM.innerHTML = format(this.revenue);
   }
   // 等待区的reset
   waitsDOMReset() {
-    const dom = document.querySelector(className.waitAreas)
+    const dom = document.querySelector(className.waitAreas);
     dom.innerHTML = ""; // 等待区DOM清除
   }
   // 餐桌区DOM的reset
   seatsDOMReset() {
-    const dom = document.querySelector(className.seatsAreas)
+    const dom = document.querySelector(className.seatsAreas);
     dom.innerHTML = `<div class="customer-wrapper">
+    <div class="customer-img-wrapper" id="seat-0">
+      <img src="" alt="">
+    </div>
+  </div>
+  <div class="customer-wrapper" id="seat-1">
     <div class="customer-img-wrapper">
       <img src="" alt="">
     </div>
   </div>
-  <div class="customer-wrapper">
+  <div class="customer-wrapper" id="seat-2">
     <div class="customer-img-wrapper">
       <img src="" alt="">
     </div>
   </div>
-  <div class="customer-wrapper">
-    <div class="customer-img-wrapper">
-      <img src="" alt="">
-    </div>
-  </div>
-  <div class="customer-wrapper">
+  <div class="customer-wrapper" id="seat-3">
     <div class="customer-img-wrapper">
       <img src="" alt="">
     </div>
@@ -277,16 +284,13 @@ class Restaurant {
     return this.chiefs.findIndex((item) => !item);
   }
   /* 判断是否仅有一个厨师 */
-  hasOnlyOneChief(chiefs): boolean {
+  hasOnlyOneChief(): boolean | Chief {
     let count = 0;
-    for (const chief of chiefs) {
-      if (chief === null) count++;
+    let one = null;
+    for (const chief of this.chiefs) {
+      chief === null ? count++ : (one = chief);
     }
-    // 只有一个初始
-    if (count === maxChiefNumber - 1) {
-      return true;
-    }
-    return false;
+    return count === maxChiefNumber - 1 ? one : false;
   }
   /* 判断餐厅的的空位 */
   isSeatsEmpty(): boolean | number {
@@ -313,32 +317,39 @@ class Restaurant {
       return;
     }
     // 增加dom与数据数组变化
-    const newChiefDOM = document.getElementById(`chief-${index}`)
-    newChiefDOM.style.display = 'flex'
+    const newChiefDOM = document.getElementById(`chief-${index}`);
+    newChiefDOM.style.display = "flex";
     const chief = new Chief(index); // index代表哪一个没有
     this.chiefs[index] = chief;
     let number = 0;
     for (const chief of this.chiefs) {
-      if (chief) {
+      if (chief && chief.state === ChiefState.IDLE) {
         number++;
+        chief.showFireIcon();
       }
     }
     this.isShowAddIcon();
-    if(this.taskQueue.length > 0) {
-      chief.changeState(ChiefState.COOKING)
+    if (this.taskQueue.length > 0) {
+      chief.changeState(ChiefState.COOKING);
     }
-    setTimeout(()=>{emitter.emit(EVENT.RECRUIT_SUCCESS, number);})
+    setTimeout(() => {
+      emitter.emit(EVENT.RECRUIT_SUCCESS, number);
+    });
   }
   // 解雇厨师
-  handleFireAChief(compensation, index, ele) {
+  handleFireAChief(compensation, index) {
     if (this.revenue < compensation) {
-      emitter.emit(EVENT.MONEY_INSUFFICIENT)
+      emitter.emit(EVENT.MONEY_INSUFFICIENT);
     } else {
       this.moneyChange(-compensation);
-      document.getElementById(`chief-${index}`).style.display = 'none';
+      document.getElementById(`chief-${index}`).style.display = "none";
       this.chiefs[index] = null;
       this.isShowAddIcon();
-      emitter.emit(EVENT.FIRE_SUCCESS, compensation)
+      let onlyOne = this.hasOnlyOneChief();
+      if (onlyOne) {
+        (onlyOne as Chief).hideFireIcon();
+      }
+      emitter.emit(EVENT.FIRE_SUCCESS, compensation);
     }
   }
   // 点击区域处理
