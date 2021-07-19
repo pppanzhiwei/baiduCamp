@@ -135,7 +135,7 @@ function changeProgressStyle(
     (progress.lastChild as HTMLElement).style.backgroundColor = color;
   }
 }
-// 生成顾客信息
+// 生成日顾客信息
 //
 function createCustomerInformation() {
   const nameNumber = customerName.length;

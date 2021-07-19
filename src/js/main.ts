@@ -11,9 +11,6 @@ import { Restaurant } from "./restaurant";
 import { bgColorType, Info, InfoType } from "./info";
 import { Customer } from "./Customer";
 
-
-
-
 let gameModal: HTMLDivElement;
 const info: HTMLElement = Info();
 let restaurant: Restaurant;

@@ -13,7 +13,6 @@ import { createCustomerInformation, format } from "./utils";
 import { emitter } from "./eventEmit";
 import { Food } from "./food";
 
-// 餐馆类
 class Restaurant {
   public restaurantTime: GlobalTime; // 餐馆时间
   public restaurantTimer: NodeJS.Timeout; // 餐馆interval
@@ -112,9 +111,11 @@ class Restaurant {
   payChiefs(chiefs: Array<Chief>, setMoney: number) {
     let payOffAll: number = 0;
     for (const chief of chiefs) {
-      let payOff = Math.ceil((chief.workDay / 7) * setMoney);
-      payOffAll -= payOff; // 支出
-      chief.workDay = 0; // 工资天数初始化
+      if (chief) {
+        let payOff = Math.ceil((chief.workDay / 7) * setMoney);
+        payOffAll -= payOff; // 支出
+        chief.workDay = 0; // 工资天数初始化
+      }
     }
     this.moneyChange(payOffAll);
   }
@@ -156,9 +157,20 @@ class Restaurant {
       // 获取得到当前时刻前往餐馆的顾客
       let len = that.waits.length;
       const currentTime = that.restaurantTime.second;
-      let customers = that.customers.filter(
-        (item) => item.visitTime == currentTime
-      );
+      const customers = [];
+      for (let i = 0; i < that.customers.length; i++) {
+        if (that.customers[i].visitTime == currentTime) {
+          if (
+            customers.findIndex(
+              (item) => item.name === that.customers[i].name
+            ) !== -1
+          ) {
+            continue;
+          } else {
+            customers.push(that.customers[i]);
+          }
+        }
+      }
       if (!customers.length) return;
       // 2、加入等待位的客人
       let index = 0;
@@ -323,18 +335,18 @@ class Restaurant {
     this.chiefs[index] = chief;
     let number = 0;
     for (const chief of this.chiefs) {
-      if (chief && chief.state === ChiefState.IDLE) {
+      if(chief) {
         number++;
-        chief.showFireIcon();
+        if(chief.state === ChiefState.IDLE) {
+          chief.showFireIcon();
+        }
       }
     }
     this.isShowAddIcon();
     if (this.taskQueue.length > 0) {
       chief.changeState(ChiefState.COOKING);
     }
-    setTimeout(() => {
-      emitter.emit(EVENT.RECRUIT_SUCCESS, number);
-    });
+    emitter.emit(EVENT.RECRUIT_SUCCESS, number);
   }
   // 解雇厨师
   handleFireAChief(compensation, index) {

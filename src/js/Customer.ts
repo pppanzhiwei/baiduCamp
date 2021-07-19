@@ -61,7 +61,7 @@ class Customer {
     this.state = state;
     switch (state) {
       case CustomerState.WAIT_SEAT: {
-        this.handleStartWait(); //
+        this.handleStartWait(); 
         break;
       }
       case CustomerState.LEAVE: {
@@ -77,19 +77,14 @@ class Customer {
         break;
       }
       case CustomerState.EATING: {
-        this.changeCustomerBgColor();
         this.handleStartEating();
         break;
       }
       case CustomerState.ANGRY: {
-        this.changeCustomerBgColor();
-        const dom = document.getElementById(`seat-${this.seatNumber}`);
-        dom.classList.add("customer-wrapper-angry");
         this.handleSatisfy();
         break;
       }
       case CustomerState.WAIT_PAY: {
-
         this.handlePay();
         break;
       }
@@ -381,6 +376,7 @@ class Customer {
   }
   // 处理进餐逻辑
   handleStartEating() {
+    this.changeCustomerBgColor();
     // 如果定时器存在 说明还没吃完
     if (this.timer) {
       return;
@@ -413,9 +409,14 @@ class Customer {
     this.changeCustomerBgColor();
     const dom = document.getElementById(`seat-${this.seatNumber}`);
     dom.classList.add("customer-wrapper-pay");
+    this.timer = setTimeout(()=>{
+      emitter.emit(EVENT.CUSTOMER_PAY, this.name,this.consume);
+      this.changeState(CustomerState.LEAVE);
+    },5000)
     dom.addEventListener("click", this.clickIcon.bind(this));
   }
   clickIcon() {
+      clearTimeout(this.timer)
       if(this.state === CustomerState.WAIT_PAY) {
         emitter.emit(EVENT.CUSTOMER_PAY, this.name,this.consume);
       } else {
@@ -425,7 +426,9 @@ class Customer {
   }
   // 安抚顾客
   handleSatisfy() {
+    this.changeCustomerBgColor();
     const dom = document.getElementById(`seat-${this.seatNumber}`);
+    dom.classList.add("customer-wrapper-angry");
     dom.addEventListener("click", this.clickIcon.bind(this));
   }
   leave() {
@@ -443,7 +446,6 @@ class Customer {
     this.reset();
   }
   reset() {
-    // 状态初始化
     this.eatList = [];
     this.orderList = [];
     this.state = CustomerState.INIT;
@@ -454,11 +456,13 @@ class Customer {
     if (this.timer) {
       clearTimeout(this.timer);
     }
+    this.timer = null
     if (this.waitDishTimer.length > 0) {
       for (const timer of this.waitDishTimer) {
         clearTimeout(timer);
       }
     }
+    this.waitDishTimer = []
   }
 }
 export { Customer, CustomerState, CustomerStateBgColor };

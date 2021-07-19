@@ -14,7 +14,6 @@ module.exports = {
     index: resolve(__dirname, './src/js/main.ts')
   },
   output: {
-    publicPath: './',
     path: resolve(__dirname, './dist'),
     filename:'[name].[chunkhash:8].js'
   },
